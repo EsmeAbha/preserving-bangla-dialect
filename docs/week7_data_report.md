@@ -83,3 +83,24 @@ The planned runs use 8 epochs × 3 seeds on a Kaggle GPU; these numbers are not 
 After one epoch BanglaT5 is 1.1 chrF below the dictionary (95% paired bootstrap CI [−2.18, −0.08]) and above it in
 BLEU; no empty outputs. Its per-dialect order is exactly the distance order (Spearman ρ = −0.565 between
 per-sentence distance and chrF, CI [−0.605, −0.522]).
+
+## Qwen2.5-3B-Instruct zero-shot on validation (CPU, bf16)
+
+The backup model from the proposal (the 7B does not fit in this machine's memory). Greedy decoding, 128 new
+tokens, chat template, the three instruction paraphrases in `src/common.py` as the three runs.
+
+| Instruction | chrF | BLEU | LaBSE | WER |
+|---|---|---|---|---|
+| p0 (proposal prompt) | 39.03 | 9.19 | 0.678 | 74.5 |
+| p1 | 40.50 | 9.80 | 0.680 | 71.7 |
+| p2 | 40.09 | 9.57 | 0.676 | 72.8 |
+| mean ± std | 39.87 ± 0.76 | 9.52 | 0.68 | |
+| copy baseline | 40.95 | 10.43 | 0.67 | |
+
+Per dialect (mean of 3): Chittagong 28.0, Noakhali 35.3, Sylhet 40.5, Barishal 40.5, Mymensingh 55.0.
+
+- Zero-shot prompting of the 3B model is **below the copy baseline** (−1.08 chrF, 95% paired bootstrap CI
+  [−1.61, −0.55]); it changes words but rarely produces standard forms, and hurts most on Mymensingh (55.0 vs. 58.7).
+- The instruction wording matters little (1.5 chrF spread). No empty outputs.
+- Per-sentence Spearman ρ between dialect distance and output chrF is −0.90 (CI [−0.911, −0.886]): the outputs stay
+  close to the input, so their quality follows the distance almost exactly.
