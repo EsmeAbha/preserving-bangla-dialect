@@ -5,7 +5,7 @@ Because of rate limits, --subset 500 uses a fixed stratified 500-pair subset (10
 Finished rows are cached, so an interrupted run resumes where it stopped.
 
   export GROQ_API_KEY=...
-  python groq_generate.py --splits test --subset 500
+  python src/groq_generate.py --splits test --subset 500
 """
 import argparse
 import json

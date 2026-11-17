@@ -2,11 +2,11 @@
 
 Examples (Kaggle GPU):
   # zero-shot, three instruction paraphrases = three runs
-  for p in 0 1 2; do python generate.py --model qwen7b --mode zeroshot --instruction $p --run p$p --splits val; done
+  for p in 0 1 2; do python src/generate.py --model qwen7b --mode zeroshot --instruction $p --run p$p --splits val; done
   # 5-shot, three example draws
-  for s in 1 2 3; do python generate.py --model qwen7b --mode fewshot --shot_seed $s --run s$s --splits val; done
+  for s in 1 2 3; do python src/generate.py --model qwen7b --mode fewshot --shot_seed $s --run s$s --splits val; done
   # a trained adapter
-  python generate.py --model qwen7b --adapter checkpoints/qwen7b_qlora_s1/best --system qwen7b_qlora --run s1
+  python src/generate.py --model qwen7b --adapter checkpoints/qwen7b_qlora_s1/best --system qwen7b_qlora --run s1
 
 Writes outputs/<system>/<run>/<split>.jsonl with fields id, dialect, src, tgt, raw, hyp.
 """

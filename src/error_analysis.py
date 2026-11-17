@@ -7,8 +7,8 @@ summarize  counts the categories per dialect and lists one example per category.
 Categories: word_sense (wrong word sense), dropped (dropped words), negation_tense (changed negation
 or tense), still_dialect (output still in dialect), other.
 
-  python error_analysis.py sample --system qwen7b_qlora --run s1 --n 60
-  python error_analysis.py summarize
+  python src/error_analysis.py sample --system qwen7b_qlora --run s1 --n 60
+  python src/error_analysis.py summarize
 """
 import argparse
 import csv

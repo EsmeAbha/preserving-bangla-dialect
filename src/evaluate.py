@@ -9,7 +9,7 @@ Reads outputs/<system>/<run>/<split>.jsonl (fields id, dialect, tgt, hyp) and wr
 
 Empty or unusable outputs stay in and get chrF 0 and LaBSE 0.
 
-  python evaluate.py --split test --labse --compare qwen7b_qlora:qwen7b_zeroshot qwen7b_qlora:qwen7b_fewshot
+  python src/evaluate.py --split test --labse --compare qwen7b_qlora:qwen7b_zeroshot qwen7b_qlora:qwen7b_fewshot
 """
 import argparse
 import csv

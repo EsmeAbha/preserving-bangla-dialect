@@ -20,7 +20,7 @@ What the script does
      copy-baseline chrF per dialect on validation (the word-level dialect distance is 100 minus it).
 
 Usage:
-  python prepare_data.py --raw_dir <unzipped Vashantor CSV folder> --out_dir data/processed
+  python src/prepare_data.py --raw_dir <unzipped Vashantor CSV folder> --out_dir data/processed
 """
 import argparse
 import json

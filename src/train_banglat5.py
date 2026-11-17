@@ -5,7 +5,7 @@ with their normaliser (pip install git+https://github.com/csebuetnlp/normalizer)
 inputs when installed. Outputs are scored against the original references. The epoch with the
 best validation chrF is kept. Training is in fp32 because T5 is unstable in fp16.
 
-  python train_banglat5.py --seed 1        (also 2, 3)
+  python src/train_banglat5.py --seed 1        (also 2, 3)
 Writes outputs/banglat5/s<seed>/{val,test}.jsonl and checkpoints/banglat5_s<seed>/log.json
 """
 import argparse

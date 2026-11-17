@@ -6,11 +6,11 @@ answer tokens only. Validation chrF (on a fixed stratified validation subset) is
 times per epoch and the adapter with the best value is kept. After training, the best adapter is
 used to write predictions for the full validation and test splits.
 
-Main runs:         python train_qlora.py --model qwen7b --seed 1      (also 2, 3; and --model llama8b)
-Data ablation:     python train_qlora.py --model qwen7b --train_frac 0.25 --name qwen7b_frac25
-Rank ablation:     python train_qlora.py --model qwen7b --rank 8 --alpha 16 --name qwen7b_r8
-No dialect name:   python train_qlora.py --model qwen7b --no_dialect_name --name qwen7b_nodialect
-Leave one out:     python train_qlora.py --model qwen7b --holdout chittagong --name qwen7b_lodo_chittagong
+Main runs:         python src/train_qlora.py --model qwen7b --seed 1      (also 2, 3; and --model llama8b)
+Data ablation:     python src/train_qlora.py --model qwen7b --train_frac 0.25 --name qwen7b_frac25
+Rank ablation:     python src/train_qlora.py --model qwen7b --rank 8 --alpha 16 --name qwen7b_r8
+No dialect name:   python src/train_qlora.py --model qwen7b --no_dialect_name --name qwen7b_nodialect
+Leave one out:     python src/train_qlora.py --model qwen7b --holdout chittagong --name qwen7b_lodo_chittagong
 
 Outputs: checkpoints/<name>_s<seed>/best (adapter), .../log.json, and
          outputs/<name>/s<seed>/{val,test}.jsonl
@@ -110,7 +110,7 @@ def main():
     from transformers import AutoModelForCausalLM, BitsAndBytesConfig, get_cosine_schedule_with_warmup
 
     set_seed(args.seed)
-    name = args.name or f"{args.model}_qlora"
+    name = args.name or f"{Path(args.model).name}_qlora"
     run_dir = Path(args.ckpt_dir) / f"{name}_s{args.seed}"
     run_dir.mkdir(parents=True, exist_ok=True)
     model_id = MODELS.get(args.model, args.model)

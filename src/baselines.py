@@ -5,7 +5,7 @@ dictionary  word replacements learned per dialect from aligned training pairs (d
             the two token sequences); the most frequent standard form is used, unknown words are copied.
 
 Usage:
-  python baselines.py --data_dir data/processed --out_dir outputs --splits val test
+  python src/baselines.py --data_dir data/processed --out_dir outputs --splits val test
 Writes outputs/{copy,dictionary}/run1/{split}.jsonl
 """
 import argparse

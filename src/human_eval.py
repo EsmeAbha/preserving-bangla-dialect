@@ -6,8 +6,8 @@ make   picks 150 test outputs: the same sentences for each compared system, stra
 score  reads the filled sheets: mean rating per system (and per dialect), quadratic-weighted Cohen's
        kappa on the 50 shared items, and Spearman correlation of ratings with sentence chrF / LaBSE.
 
-  python human_eval.py make --systems qwen7b_zeroshot qwen7b_fewshot qwen7b_qlora --runs p0 s1 s1
-  python human_eval.py score            (after filling the `rating` column in both sheets)
+  python src/human_eval.py make --systems qwen7b_zeroshot qwen7b_fewshot qwen7b_qlora --runs p0 s1 s1
+  python src/human_eval.py score            (after filling the `rating` column in both sheets)
 
 Rating scale (put it in front of the annotators):
   5 same meaning   4 minor difference   3 main meaning kept, a detail lost or wrong

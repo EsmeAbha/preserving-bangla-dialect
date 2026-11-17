@@ -1,5 +1,5 @@
 """Builds a tiny randomly initialised Qwen2-style chat model offline, to smoke-test generate.py and
-train_qlora.py on CPU (python train_qlora.py --model <dir> --no_4bit --max_steps 4 ...).
+train_qlora.py on CPU (python src/train_qlora.py --model <dir> --no_4bit --max_steps 4 ...).
 Its outputs are meaningless."""
 import argparse
 import json
@@ -7,6 +7,9 @@ import json
 from tokenizers import Tokenizer, models, pre_tokenizers, trainers, decoders
 from transformers import PreTrainedTokenizerFast, Qwen2Config, Qwen2ForCausalLM
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from common import INSTRUCTIONS, load_jsonl
 
 CHATML = ("{% for m in messages %}<|im_start|>{{ m['role'] }}\n{{ m['content'] }}<|im_end|>\n{% endfor %}"

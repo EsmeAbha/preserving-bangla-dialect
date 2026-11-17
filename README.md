@@ -6,7 +6,9 @@ Llama-3.3-70B (Groq). Metrics: chrF (primary), BLEU, LaBSE similarity, human mea
 
 ## Files
 
-| File | What it does |
+Python modules are in `src/`; run everything from the repository root (e.g. `python src/evaluate.py`).
+
+| File (in `src/` unless a folder is given) | What it does |
 |---|---|
 | `prepare_data.py` | Cleans Vashantor and aligns the splits by standard sentence → `data/processed/{train,val,test}.jsonl`, `stats.json` |
 | `prepare_onubad.py` | ONUBAD → `data/processed/onubad.jsonl` (out-of-domain test; Chittagong, Sylhet, Barishal) |
@@ -32,7 +34,7 @@ Runs are `p0 p1 p2` (zero-shot instruction paraphrases) or `s1 s2 s3` (seeds / f
 1. Download `Vashantor_CSV_Format.zip` from Mendeley Data (V2, doi:10.17632/bj5jgk878b.2, CC BY 4.0) and
    unzip it into `data/raw/`. Only Bangla-script files are used (Banglish/English files are skipped).
 2. `pip install -r requirements.txt`
-3. `python prepare_data.py --raw_dir data/raw --out_dir data/processed`
+3. `python src/prepare_data.py --raw_dir data/raw --out_dir data/processed`
 
 The script prints, for each dialect and split, the file and the two columns used — check them. If the
 columns are not detected, pass `--src_col <dialect column> --tgt_col <standard Bangla column>`.
@@ -44,7 +46,7 @@ empty or duplicate pairs, the moved pairs, split sizes, and the validation copy-
 (dialect distance = 100 − chrF).
 
 ONUBAD (Mendeley Data V2, doi:10.17632/6ft99kf89b.2): unzip into `data/raw_onubad/`, then
-`python prepare_onubad.py --raw_dir data/raw_onubad`. Check the printed column choices. The script
+`python src/prepare_onubad.py --raw_dir data/raw_onubad`. Check the printed column choices. The script
 also counts ONUBAD standard sentences that occur in the Vashantor training set.
 
 ## 2. Experiments (Kaggle, GPU T4 ×2 or P100; one GPU is used)
@@ -81,22 +83,22 @@ writes `results/test/main_table.md` (RQ1), `significance.md` (paired bootstrap, 
 (RQ3), `results/ablations/test/main_table.md` and `results/onubad/main_table.md` (out-of-domain /
 contamination check: compare zero-shot on Vashantor and ONUBAD). Empty or unusable outputs count as 0.
 
-Human evaluation: `python human_eval.py make` → give `human_eval/sheet_annotator1.csv` (150 rows) to
+Human evaluation: `python src/human_eval.py make` → give `human_eval/sheet_annotator1.csv` (150 rows) to
 yourself and `sheet_annotator2.csv` (50 rows) to the second annotator; fill the `rating` column (1–5;
-scale in `human_eval.py`); then `python human_eval.py score` (needs `results/test/sentences.csv`).
+scale in `human_eval.py`); then `python src/human_eval.py score` (needs `results/test/sentences.csv`).
 
-Error analysis: `python error_analysis.py sample` → label the `category` column of
+Error analysis: `python src/error_analysis.py sample` → label the `category` column of
 `error_analysis/errors_qwen7b_qlora_s1.csv` (word_sense, dropped, negation_tense, still_dialect, other),
-then `python error_analysis.py summarize`.
+then `python src/error_analysis.py summarize`.
 
 ## CPU smoke test (no data, no GPU)
 
 ```
-export PYTHONPATH=$PWD
+export PYTHONPATH=$PWD/src
 python tests/make_synthetic.py --out /tmp/g14/raw
-python prepare_data.py --raw_dir /tmp/g14/raw --out_dir /tmp/g14/proc
-python baselines.py --data_dir /tmp/g14/proc --out_dir /tmp/g14/out
+python src/prepare_data.py --raw_dir /tmp/g14/raw --out_dir /tmp/g14/proc
+python src/baselines.py --data_dir /tmp/g14/proc --out_dir /tmp/g14/out
 python tests/fake_llm_outputs.py --data_dir /tmp/g14/proc --out_dir /tmp/g14/out
-python evaluate.py --out_dir /tmp/g14/out --results_dir /tmp/g14/res --compare qwen7b_qlora:qwen7b_zeroshot
+python src/evaluate.py --out_dir /tmp/g14/out --results_dir /tmp/g14/res --compare qwen7b_qlora:qwen7b_zeroshot
 ```
 The fake LLM outputs are noise around the reference and must never be reported.

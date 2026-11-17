@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 MODELS=${1:-"qwen7b llama8b"}
 for M in $MODELS; do
   for S in 1 2 3; do
-    python train_qlora.py --model $M --seed $S --name ${M}_qlora
+    python src/train_qlora.py --model $M --seed $S --name ${M}_qlora
   done
 done
-python evaluate.py --split val
+python src/evaluate.py --split val

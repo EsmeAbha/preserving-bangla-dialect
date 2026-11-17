@@ -12,7 +12,7 @@ Column detection (check the printed choices):
   * if a file has no dialect-named column, the dialect is taken from the file name and --src_col is used
     (or the single remaining non-English text column).
 
-  python prepare_onubad.py --raw_dir data/raw_onubad --out data/processed/onubad.jsonl
+  python src/prepare_onubad.py --raw_dir data/raw_onubad --out data/processed/onubad.jsonl
 """
 import argparse
 import json
