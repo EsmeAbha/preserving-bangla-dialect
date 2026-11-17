@@ -12,7 +12,9 @@ MODELS = {
 
 
 def compute_dtype():
-    return torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16
+    if not torch.cuda.is_available():
+        return torch.bfloat16  # CPU: bf16 is fast with AMX/AVX-512 and fp16 is not
+    return torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
 
 
 def load_tokenizer(model_id):
