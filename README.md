@@ -56,7 +56,7 @@ also counts ONUBAD standard sentences that occur in the Vashantor training set.
 
 ## 2. Experiments (Kaggle, GPU T4 ×2 or P100; one GPU is used)
 
-Upload `data/processed/` and this folder as Kaggle datasets, and add the secrets `HF_TOKEN` (needed for
+The notebook clones this repo (code and `data/processed/`). Add the Kaggle secrets `HF_TOKEN` (needed for
 Llama-3.1, which is gated: accept its licence on Hugging Face first) and `GROQ_API_KEY`. Then follow
 `kaggle_notebook.ipynb` or run the weekly scripts:
 
