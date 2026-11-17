@@ -31,6 +31,11 @@ Runs are `p0 p1 p2` (zero-shot instruction paraphrases) or `s1 s2 s3` (seeds / f
 
 ## 1. Data
 
+**Already included:** `data/processed/` holds the cleaned, aligned Vashantor splits, `onubad.jsonl` and
+`onubad_novel.jsonl` (ONUBAD pairs that do not overlap Vashantor training data), derived from the CC BY 4.0
+datasets below. `docs/week7_data_report.md` summarises them with the copy and dictionary baselines on
+validation. Re-create them with the steps below.
+
 1. Download `Vashantor_CSV_Format.zip` from Mendeley Data (V2, doi:10.17632/bj5jgk878b.2, CC BY 4.0) and
    unzip it into `data/raw/`. Only Bangla-script files are used (Banglish/English files are skipped).
 2. `pip install -r requirements.txt`

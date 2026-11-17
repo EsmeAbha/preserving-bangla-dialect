@@ -1,0 +1,19 @@
+{
+  "pairs": 2796,
+  "per_dialect": {
+    "chittagong": 935,
+    "sylhet": 931,
+    "barishal": 930
+  },
+  "dropped": {
+    "duplicate": 144
+  },
+  "pairs_with_standard_sentence_in_vashantor_train": 323,
+  "pairs_with_dialect_sentence_in_vashantor_train": 126,
+  "novel_pairs": 2437,
+  "novel_per_dialect": {
+    "chittagong": 822,
+    "sylhet": 809,
+    "barishal": 806
+  }
+}

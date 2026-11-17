@@ -1,9 +1,9 @@
 __pycache__/
 *.pyc
-data/
+data/raw/
+data/raw_onubad/
 checkpoints/
 outputs/
-results/
 human_eval/
 error_analysis/
 *.zip

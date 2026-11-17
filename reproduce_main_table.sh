@@ -11,4 +11,6 @@ python src/evaluate.py --split test --labse --systems $MAIN \
             qwen7b_qlora:banglat5 llama8b_qlora:llama8b_fewshot qwen7b_qlora:llama70b_groq_zeroshot
 python src/evaluate.py --split test --labse --systems $ABL --results_dir results/ablations
 python src/evaluate.py --split test --labse --systems $LODO --results_dir results/lodo
-if ls outputs/*/*/onubad.jsonl >/dev/null 2>&1; then python src/evaluate.py --split onubad --labse; fi
+for S in onubad onubad_novel; do
+  if ls outputs/*/*/$S.jsonl >/dev/null 2>&1; then python src/evaluate.py --split $S --labse; fi
+done

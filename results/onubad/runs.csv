@@ -1,0 +1,9 @@
+system,run,dialect,chrF,BLEU,LaBSE,WER,n,empty
+copy,run1,chittagong,29.285,6.8974,,83.2016,935,0
+copy,run1,sylhet,39.1125,9.1773,,70.7539,931,0
+copy,run1,barishal,43.4568,12.6893,,64.1975,930,0
+copy,run1,all,37.3201,9.6002,,72.7317,2796,0
+dictionary,run1,chittagong,51.3436,23.7232,,53.9069,935,0
+dictionary,run1,sylhet,63.9535,35.1793,,43.3852,931,0
+dictionary,run1,barishal,67.0711,40.7417,,36.8019,930,0
+dictionary,run1,all,60.8106,33.3021,,44.7106,2796,0

@@ -1,0 +1,61 @@
+{
+  "removed": {},
+  "moved_for_alignment": 5,
+  "standard_sentence_groups": 2507,
+  "group_size_counts": {
+    "5": 2488,
+    "10": 2,
+    "4": 6,
+    "3": 1,
+    "1": 7,
+    "2": 3
+  },
+  "splits": {
+    "train": {
+      "pairs": 9370,
+      "per_dialect": {
+        "chittagong": 1874,
+        "noakhali": 1874,
+        "sylhet": 1874,
+        "barishal": 1874,
+        "mymensingh": 1874
+      },
+      "standard_sentences": 1876,
+      "mean_src_words": 6.7,
+      "mean_tgt_words": 6.7
+    },
+    "val": {
+      "pairs": 1255,
+      "per_dialect": {
+        "chittagong": 251,
+        "noakhali": 251,
+        "sylhet": 251,
+        "barishal": 251,
+        "mymensingh": 251
+      },
+      "standard_sentences": 250,
+      "mean_src_words": 5.5,
+      "mean_tgt_words": 5.5
+    },
+    "test": {
+      "pairs": 1875,
+      "per_dialect": {
+        "chittagong": 375,
+        "noakhali": 375,
+        "sylhet": 375,
+        "barishal": 375,
+        "mymensingh": 375
+      },
+      "standard_sentences": 381,
+      "mean_src_words": 7.2,
+      "mean_tgt_words": 7.3
+    }
+  },
+  "copy_baseline_chrf_val": {
+    "chittagong": 26.0,
+    "noakhali": 37.56,
+    "sylhet": 39.79,
+    "barishal": 42.61,
+    "mymensingh": 58.67
+  }
+}

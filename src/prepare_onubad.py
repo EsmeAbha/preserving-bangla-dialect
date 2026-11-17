@@ -1,8 +1,7 @@
 """Prepare ONUBAD (Mendeley Data V2, doi:10.17632/6ft99kf89b.2, CC BY 4.0) as an out-of-domain test set.
 
-Only Chittagong, Sylhet and Barishal are in ONUBAD. Word- and clause-level entries are not used:
-if the files have a column describing the entry type (e.g. "type"/"level"), only sentence rows are
-kept; otherwise rows with fewer than --min_words words in the standard sentence are dropped.
+Only Chittagong, Sylhet and Barishal are in ONUBAD. Word- and clause-level entries are not used: the
+release has Sentence.xlsx, Word.xlsx and Clause.xlsx, and files named *word* / *clause* are skipped.
 
 Column detection (check the printed choices):
   * a column whose name contains a dialect name (chittagong/chattogram/ctg, sylhet, barishal/barisal)
@@ -52,13 +51,14 @@ def main():
     ap.add_argument("--src_col", default=None, help="dialect column when the dialect is given by the file name")
     ap.add_argument("--dialect_cols", nargs="*", default=[], help="e.g. chittagong=Chittagong_Text sylhet=...")
     ap.add_argument("--type_col", default=None, help="column with the entry level (word/clause/sentence)")
-    ap.add_argument("--min_words", type=int, default=3)
+    ap.add_argument("--min_words", type=int, default=1)
     ap.add_argument("--vashantor_train", default="data/processed/train.jsonl")
     args = ap.parse_args()
     manual = dict(x.split("=", 1) for x in args.dialect_cols)
 
     rows, dropped = [], Counter()
-    files = [f for f in Path(args.raw_dir).rglob("*") if f.suffix.lower() in (".csv", ".xlsx", ".xls")]
+    files = [f for f in Path(args.raw_dir).rglob("*") if f.suffix.lower() in (".csv", ".xlsx", ".xls")
+             and not any(w in f.stem.lower() for w in ("word", "clause"))]  # ONUBAD: Sentence.xlsx only
     for f in sorted(files):
         df = read_any(f)
         cols = [str(c) for c in df.columns]
@@ -107,8 +107,22 @@ def main():
     stats = {"pairs": len(uniq), "per_dialect": dict(Counter(r["dialect"] for r in uniq)), "dropped": dict(dropped)}
     vt = Path(args.vashantor_train)
     if vt.exists():
-        train_keys = {group_key(json.loads(l)["tgt"]) for l in open(vt, encoding="utf-8")}
-        stats["standard_sentences_also_in_vashantor_train"] = sum(group_key(r["tgt"]) in train_keys for r in uniq)
+        # pairs whose standard sentence (or dialect sentence) also occurs in Vashantor training data are
+        # not really out-of-domain; onubad_novel.jsonl leaves them out
+        train = [json.loads(l) for l in open(vt, encoding="utf-8")]
+        tgt_keys = {group_key(r["tgt"]) for r in train}
+        src_keys = {(r["dialect"], group_key(r["src"])) for r in train}
+        seen_t = [group_key(r["tgt"]) in tgt_keys for r in uniq]
+        seen_s = [(r["dialect"], group_key(r["src"])) in src_keys for r in uniq]
+        novel = [r for r, t, s in zip(uniq, seen_t, seen_s) if not (t or s)]
+        stats["pairs_with_standard_sentence_in_vashantor_train"] = sum(seen_t)
+        stats["pairs_with_dialect_sentence_in_vashantor_train"] = sum(seen_s)
+        stats["novel_pairs"] = len(novel)
+        stats["novel_per_dialect"] = dict(Counter(r["dialect"] for r in novel))
+        ids = {id(r): f"onubad-{i:05d}" for i, r in enumerate(uniq)}
+        with open(out.with_name(out.stem + "_novel.jsonl"), "w", encoding="utf-8") as fh:
+            for r in novel:
+                fh.write(json.dumps({"id": ids[id(r)], "group_id": -1, **r}, ensure_ascii=False) + "\n")
     print(json.dumps(stats, indent=2, ensure_ascii=False))
     json.dump(stats, open(out.with_suffix(".stats.json"), "w"), indent=2, ensure_ascii=False)
 
