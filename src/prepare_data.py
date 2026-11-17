@@ -54,11 +54,26 @@ def group_key(text: str) -> str:
     return PUNCT_KEY.sub("", text)
 
 
+ALIASES = {  # spellings seen in Vashantor file and column names
+    "chittagong": ["chittagong", "chattogram", "ctg"],
+    "noakhali": ["noakhali"],
+    "sylhet": ["sylhet"],
+    "barishal": ["barishal", "barisal"],
+    "mymensingh": ["mymensingh", "mymenshing"],
+}
+
+
+def has_dialect(name: str, dialect: str) -> bool:
+    name = name.lower()
+    return any(a in name for a in ALIASES[dialect])
+
+
 def find_file(raw: Path, dialect: str, split: str) -> Path:
     hits = []
     for f in raw.rglob("*.csv"):
         name = str(f.relative_to(raw)).lower()
-        if dialect in name and any(w in name for w in SPLITS[split]) and not any(w in name for w in SKIP_WORDS):
+        if has_dialect(name, dialect) and any(w in name for w in SPLITS[split]) \
+                and not any(w in name for w in SKIP_WORDS):
             hits.append(f)
     if len(hits) != 1:
         raise SystemExit(f"Expected one file for {dialect}/{split}, found {len(hits)}: {hits}. "
@@ -67,16 +82,27 @@ def find_file(raw: Path, dialect: str, split: str) -> Path:
 
 
 def pick_columns(df: pd.DataFrame, dialect: str, src_col, tgt_col):
+    """Dialect column: a text column whose name has the dialect name (e.g. 'sylhet_bangla_speech') or
+    'regional'; standard column: 'bangla_speech' / a name with 'standard' or 'bangla' and no dialect name.
+    Falls back to the two text columns in order (dialect, standard)."""
     if src_col and tgt_col:
         return src_col, tgt_col
-    text_cols = [c for c in df.columns if pd.api.types.is_string_dtype(df[c]) or pd.api.types.is_object_dtype(df[c])]
-    if len(text_cols) != 2:
-        raise SystemExit(f"{dialect}: found text columns {text_cols}; pass --src_col and --tgt_col.")
-    a, b = text_cols
-    # the dialect column usually carries the dialect name; otherwise assume (dialect, standard)
-    if dialect in b.lower() and dialect not in a.lower():
-        a, b = b, a
-    return a, b
+    text_cols = [c for c in df.columns if (pd.api.types.is_string_dtype(df[c]) or pd.api.types.is_object_dtype(df[c]))
+                 and not any(w in str(c).lower() for w in ("english", "banglish", "region_name", "label", "unnamed"))]
+    norm = {c: str(c).strip().lower() for c in text_cols}
+    src = src_col or next((c for c in text_cols if has_dialect(norm[c], dialect) or "regional" in norm[c]), None)
+    tgt = tgt_col or next((c for c in text_cols if c != src and not has_dialect(norm[c], dialect)
+                           and (norm[c] == "bangla_speech" or "standard" in norm[c] or "bangla" in norm[c])), None)
+    if src is None and tgt is None and len(text_cols) == 2:
+        src, tgt = text_cols
+    elif src is None or tgt is None:
+        rest = [c for c in text_cols if c not in (src, tgt)]
+        if len(rest) == 1:
+            src, tgt = (rest[0], tgt) if src is None else (src, rest[0])
+    if src is None or tgt is None or src == tgt:
+        raise SystemExit(f"{dialect}: cannot tell the columns apart in {list(df.columns)}; "
+                         "pass --src_col and --tgt_col.")
+    return src, tgt
 
 
 def chrf(hyps, refs):
@@ -101,7 +127,8 @@ def main() -> None:
     for dialect in DIALECTS:
         for split in SPLITS:
             f = find_file(raw, dialect, split)
-            df = pd.read_csv(f)
+            df = pd.read_csv(f, encoding="utf-8-sig")
+            df.columns = [str(c).strip() for c in df.columns]
             sc, tc = pick_columns(df, dialect, args.src_col, args.tgt_col)
             print(f"{dialect:>10} {split:<5} {len(df):>5} rows  file={f.name}  src={sc!r}  tgt={tc!r}")
             seen = set()
