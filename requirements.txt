@@ -1,0 +1,16 @@
+# CPU parts (data prep, baselines, evaluation, human eval, error analysis)
+pandas==3.0.5
+numpy==2.5.3
+scipy==1.18.1
+sacrebleu==2.6.0
+openpyxl            # ONUBAD .xlsx files
+# GPU parts (tested versions; on Kaggle keep the preinstalled torch)
+torch>=2.4
+transformers==5.23.0
+peft==0.21.3
+bitsandbytes==0.50.2
+accelerate
+sentencepiece       # BanglaT5 tokenizer
+sentence-transformers==6.3.0   # LaBSE
+groq==1.7.0
+# optional, BanglaT5 normaliser: pip install git+https://github.com/csebuetnlp/normalizer

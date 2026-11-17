@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+data/
+checkpoints/
+outputs/
+results/
+human_eval/
+error_analysis/
+*.zip
+.ipynb_checkpoints/
