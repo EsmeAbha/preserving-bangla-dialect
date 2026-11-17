@@ -11,3 +11,9 @@ dictionary,run1,sylhet,65.4873,31.9835,0.8969,45.4019,251,0
 dictionary,run1,barishal,76.0119,53.908,0.9325,27.6611,251,0
 dictionary,run1,mymensingh,87.9598,71.917,0.9778,15.8581,251,0
 dictionary,run1,all,70.9664,44.78,0.9109,35.3316,1255,0
+banglat5_cpu1ep,s1,chittagong,55.0935,28.8433,0.8173,51.6643,251,0
+banglat5_cpu1ep,s1,noakhali,64.7074,39.4517,0.8901,40.1159,251,0
+banglat5_cpu1ep,s1,sylhet,67.3437,41.8847,0.9125,39.8262,251,0
+banglat5_cpu1ep,s1,barishal,75.527,54.4797,0.9346,28.6749,251,0
+banglat5_cpu1ep,s1,mymensingh,86.4097,67.1409,0.9756,16.727,251,0
+banglat5_cpu1ep,s1,all,69.8563,46.6483,0.906,35.404,1255,0

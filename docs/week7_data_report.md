@@ -69,3 +69,17 @@ Novel ONUBAD pairs only:
 |---|---|---|---|---|---|---|---|---|
 | copy | 1 | 2437 | 29.82 | 39.39 | 43.72 | 37.63 | 10.40 | – |
 | dictionary | 1 | 2437 | 49.95 | 62.92 | 65.60 | 59.45 | 31.52 | – |
+
+## BanglaT5 CPU check run (1 epoch, not the final run)
+
+`train_banglat5.py --seed 1 --epochs 1` on CPU (63 min), to test the script on the real model and data.
+The planned runs use 8 epochs × 3 seeds on a Kaggle GPU; these numbers are not for the report table.
+
+| System | chrF Chit | Noak | Sylh | Bari | Myme | chrF all | BLEU | LaBSE |
+|---|---|---|---|---|---|---|---|---|
+| dictionary | 59.66 | 65.82 | 65.49 | 76.01 | 87.96 | 70.97 | 44.78 | 0.91 |
+| BanglaT5, 1 epoch | 55.09 | 64.71 | 67.34 | 75.53 | 86.41 | 69.86 | 46.65 | 0.91 |
+
+After one epoch BanglaT5 is 1.1 chrF below the dictionary (95% paired bootstrap CI [−2.18, −0.08]) and above it in
+BLEU; no empty outputs. Its per-dialect order is exactly the distance order (Spearman ρ = −0.565 between
+per-sentence distance and chrF, CI [−0.605, −0.522]).
