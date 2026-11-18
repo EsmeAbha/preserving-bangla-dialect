@@ -131,6 +131,6 @@ The curve is still rising at 100%, so more data would still help the dictionary.
 | Barishal | 42.61 | 56.25 | 76.01 | +13.6 |
 | Mymensingh | 58.67 | 70.63 | 87.96 | +12.0 |
 
-Words learned from the other dialects recover about half of the gap between copy and the seen-dialect
+Words learned from the other dialects recover 40–50% of the gap between copy and the seen-dialect
 dictionary, except for Chittagong, the most distant dialect, where only +7.7 transfers. This is the
 reference that the Qwen-7B LODO folds (Week 9) should be compared with.
