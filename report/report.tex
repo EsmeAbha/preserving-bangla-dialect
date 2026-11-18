@@ -146,7 +146,7 @@ Before the GPU runs, two smaller systems were run on CPU to test the pipeline en
 (Table~\ref{tab:cpu}). BanglaT5 after a single epoch (63 minutes on 4 CPU cores) is already close to the
 dictionary baseline but 1.1 chrF below it (95\% CI $[-2.2, -0.1]$). Qwen2.5-3B-Instruct without fine-tuning
 does not beat copying the input: zero-shot is 1.1 chrF below the copy baseline (CI $[-1.6, -0.6]$), and
-5-shot examples add only about 1--1.5 chrF. Its outputs are rarely copies (1--7\%) and almost never English,
+5-shot examples add 1.1 chrF over zero-shot (CI $[+0.6, +1.7]$), which only brings it level with copying (+0.1, CI $[-0.6, +0.7]$). Its outputs are rarely copies (1--7\%) and almost never English,
 but they keep many dialect words, change pronouns or tense, or invent non-words. Even so, the copy-based
 distance predicts its zero-shot per-sentence chrF closely (Spearman $\rho=-0.90$, CI $[-0.91, -0.89]$). These runs
 motivate fine-tuning (RQ1) and show that prompting a small model is not enough.
@@ -156,7 +156,7 @@ motivate fine-tuning (RQ1) and show that prompting a small model is not enough.
 System & Chit. & Noak. & Sylh. & Bari. & Myme. & chrF & BLEU & LaBSE\\\midrule
 BanglaT5, 1 epoch & 55.09 & 64.71 & 67.34 & 75.53 & 86.41 & 69.86 & 46.65 & 0.91\\
 Qwen2.5-3B zero-shot (3 runs) & 27.98 & 35.28 & 40.54 & 40.46 & 54.97 & 39.87$\pm$0.76 & 9.52 & 0.68\\
-Qwen2.5-3B 5-shot (3 runs) & \todo{s3} & & & & & & & \\\bottomrule
+Qwen2.5-3B 5-shot (3 runs) & 29.63 & 36.84 & 41.38 & 41.53 & 55.56 & 41.01$\pm$0.35 & 10.09 & 0.70\\\bottomrule
 \end{tabular}
 \caption{Preliminary CPU runs on Vashantor validation. Not final systems.}\label{tab:cpu}
 \end{table}

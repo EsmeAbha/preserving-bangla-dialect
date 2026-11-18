@@ -134,3 +134,29 @@ The curve is still rising at 100%, so more data would still help the dictionary.
 Words learned from the other dialects recover 40–50% of the gap between copy and the seen-dialect
 dictionary, except for Chittagong, the most distant dialect, where only +7.7 transfers. This is the
 reference that the Qwen-7B LODO folds (Week 9) should be compared with.
+
+## Qwen2.5-3B-Instruct 5-shot on validation (CPU, bf16)
+
+Five same-dialect training examples per prompt, three example draws (s1–s3), about 1.7–1.8 h per run on 4 CPU
+cores. Full tables in `results/val/`.
+
+| System | Chit | Noak | Sylh | Bari | Myme | chrF all | BLEU | LaBSE |
+|---|---|---|---|---|---|---|---|---|
+| copy | 26.00 | 37.56 | 39.79 | 42.61 | 58.67 | 40.95 | 10.43 | 0.67 |
+| qwen3b zero-shot (3 runs) | 27.98 | 35.28 | 40.54 | 40.46 | 54.97 | 39.87 ± 0.76 | 9.52 | 0.68 |
+| qwen3b 5-shot (3 runs) | 29.63 | 36.84 | 41.38 | 41.53 | 55.56 | 41.01 ± 0.35 | 10.09 | 0.70 |
+| dictionary | 59.66 | 65.82 | 65.49 | 76.01 | 87.96 | 70.97 | 44.78 | 0.91 |
+
+Per-run chrF: s1 41.02, s2 41.36, s3 40.66.
+
+| A − B | Δ chrF | 95% CI |
+|---|---|---|
+| 5-shot − zero-shot | +1.14 | [+0.60, +1.65] |
+| 5-shot − copy | +0.06 | [−0.61, +0.74] |
+| 5-shot − dictionary | −29.95 | [−31.13, −28.84] |
+
+Examples help significantly but only by about one chrF point, which brings the 3B model level with copying the
+input. Its outputs are rarely copies (about 1% for 5-shot), almost never contain English, and are about as long
+as the reference; the errors are kept dialect words, changed pronouns or tense, and invented words. Distance
+still predicts per-sentence chrF (Spearman ρ = −0.82, CI [−0.84, −0.79]). Prompting a 3B model is not enough for
+this task.
