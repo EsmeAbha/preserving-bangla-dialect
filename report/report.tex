@@ -141,18 +141,58 @@ Barishal 57.4 (65.1), Mymensingh 41.3 (45.7). The ranking matches the earlier fi
 hardest dialect \cite{vashantor}. The dictionary baseline is already strong (71.0 chrF), so the LLM systems must
 be compared against it, not only against the copy baseline.
 
+\subsection{Preliminary CPU runs (validation)}
+Before the GPU runs, two smaller systems were run on CPU to test the pipeline end to end
+(Table~\ref{tab:cpu}). BanglaT5 after a single epoch (63 minutes on 4 CPU cores) is already close to the
+dictionary baseline but 1.1 chrF below it (95\% CI $[-2.2, -0.1]$). Qwen2.5-3B-Instruct without fine-tuning
+does not beat copying the input: zero-shot is 1.1 chrF below the copy baseline (CI $[-1.6, -0.6]$), and
+5-shot examples add only about 1--1.5 chrF. Its outputs are rarely copies (1--7\%) and almost never English,
+but they keep many dialect words, change pronouns or tense, or invent non-words. Even so, the copy-based
+distance predicts its zero-shot per-sentence chrF closely (Spearman $\rho=-0.90$, CI $[-0.91, -0.89]$). These runs
+motivate fine-tuning (RQ1) and show that prompting a small model is not enough.
+
+\begin{table}[h]\centering\small
+\begin{tabular}{lrrrrrrrr}\toprule
+System & Chit. & Noak. & Sylh. & Bari. & Myme. & chrF & BLEU & LaBSE\\\midrule
+BanglaT5, 1 epoch & 55.09 & 64.71 & 67.34 & 75.53 & 86.41 & 69.86 & 46.65 & 0.91\\
+Qwen2.5-3B zero-shot (3 runs) & 27.98 & 35.28 & 40.54 & 40.46 & 54.97 & 39.87$\pm$0.76 & 9.52 & 0.68\\
+Qwen2.5-3B 5-shot (3 runs) & \todo{s3} & & & & & & & \\\bottomrule
+\end{tabular}
+\caption{Preliminary CPU runs on Vashantor validation. Not final systems.}\label{tab:cpu}
+\end{table}
+
 \subsection{Main comparison (RQ1)} \todo{results/test/main\_table.md and significance.md.}
 \subsection{Which dialects are hardest (RQ2)} \todo{results/test/rq2.md: Spearman $\rho$ with CI.}
 \subsection{Leave-one-dialect-out (RQ3)} \todo{results/lodo/test/rq3\_lodo.md.}
 \subsection{Ablations} \todo{results/ablations/test/main\_table.md.}
-\subsection{Out-of-domain and contamination} \todo{results/onubad*/main\_table.md; compare zero-shot on
+\subsection{Out-of-domain and contamination}
+Baselines on ONUBAD (all 2,796 pairs / 2,437 novel pairs): copy 37.3 / 37.6 chrF, dictionary 60.8 / 59.5
+chrF (LaBSE 0.86 / 0.85). The dictionary loses about 10 chrF out of domain, because many ONUBAD words do not
+occur in Vashantor training. \todo{results/onubad*/main\_table.md; compare zero-shot on
 Vashantor and on novel ONUBAD.}
 \subsection{Human evaluation} \todo{human\_eval/human\_eval\_results.md.}
 \subsection{Error analysis} \todo{error\_analysis/error\_summary.md with examples.}
 
 \section{Discussion and limitations}
-\todo{Contamination: Vashantor has been public since 2023. ONUBAD overlap with Vashantor (323 pairs). Single
-annotator plus 50 doubly rated items. One seed for ablations and folds.}
+\paragraph{Contamination.} Vashantor has been public since 2023, so the pretrained models may have seen its
+test sentences. ONUBAD (2025) is used as a check, but it is not fully independent of Vashantor: 323 of its
+2,796 pairs share a standard sentence with Vashantor training data and 126 share a dialect sentence. All
+ONUBAD results are therefore also reported on the 2,437 novel pairs. If a system's advantage shrinks much more
+on novel ONUBAD than the baselines' does, memorisation is a likely cause.
+
+\paragraph{Data.} Vashantor's standard sentences are shared across the five dialects, so the split is made by
+standard sentence; this prevents the same meaning from appearing in training and test, but it also means the
+test set covers a limited set of topics and short conversational sentences. ONUBAD covers only three dialects.
+Some dialect sentences differ from standard Bangla only in spelling, and a few validation and test pairs are
+near-copies, which favour conservative systems.
+
+\paragraph{Metrics and annotation.} chrF rewards surface overlap and can miss meaning errors such as changed
+negation or tense; LaBSE and the human ratings are meant to catch these. Human ratings come from one annotator,
+with a second annotator on only 50 items, so the agreement estimate has a wide confidence interval.
+
+\paragraph{Runs.} The main systems use three runs, but the ablations and the leave-one-dialect-out folds use a
+single seed because of the GPU budget, so small differences there should not be over-interpreted. Llama-3.3-70B
+is evaluated on a 500-pair subset only.
 
 \begin{thebibliography}{11}\small
 \bibitem{vashantor} F.~T.~J. Faria, M.~B. Moin, A.~A. Wase, M.~Ahmmed, M.~R. Sani, T.~Muhammad. Vashantor: A
