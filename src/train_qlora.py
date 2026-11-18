@@ -102,6 +102,8 @@ def main():
     ap.add_argument("--extra_test", nargs="*", default=[])
     ap.add_argument("--max_steps", type=int, default=None, help="smoke test only")
     ap.add_argument("--no_4bit", action="store_true", help="full-precision LoRA (CPU smoke test only)")
+    ap.add_argument("--cpu_fast", action="store_true",
+                    help="CPU only: bf16 autocast and no gradient checkpointing (small models)")
     ap.add_argument("--out_dir", default="outputs")
     ap.add_argument("--ckpt_dir", default="checkpoints")
     args = ap.parse_args()
@@ -137,8 +139,9 @@ def main():
     dtype = compute_dtype() if cuda else torch.float32
     if args.no_4bit:
         model = AutoModelForCausalLM.from_pretrained(model_id, dtype=dtype, device_map={"": 0} if cuda else None)
-        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
-        model.enable_input_require_grads()
+        if not args.cpu_fast:
+            model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+            model.enable_input_require_grads()
     else:
         quant = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True,
                                    bnb_4bit_compute_dtype=dtype)
@@ -177,7 +180,8 @@ def main():
         opt.zero_grad(set_to_none=True)  # drop a partial accumulation left from the previous epoch
         for ids, att, lab in batches(examples, args.batch_size, tok.pad_token_id, rng):
             ids, att, lab = ids.to(model.device), att.to(model.device), lab.to(model.device)
-            with torch.autocast("cuda", dtype=dtype, enabled=cuda):
+            with torch.autocast("cuda" if cuda else "cpu", dtype=dtype if cuda else torch.bfloat16,
+                                enabled=cuda or args.cpu_fast):
                 loss = model(input_ids=ids, attention_mask=att, labels=lab).loss / args.grad_accum
             scaler.scale(loss).backward()
             running += loss.item()
