@@ -104,3 +104,33 @@ Per dialect (mean of 3): Chittagong 28.0, Noakhali 35.3, Sylhet 40.5, Barishal 4
 - The instruction wording matters little (1.5 chrF spread). No empty outputs.
 - Per-sentence Spearman ρ between dialect distance and output chrF is −0.90 (CI [−0.911, −0.886]): the outputs stay
   close to the input, so their quality follows the distance almost exactly.
+
+## Dictionary ablations and leave-one-dialect-out (validation, CPU)
+
+`src/dictionary_experiments.py`; full tables in `results/dict_ablations/val/`. These give the non-LLM
+reference points for RQ3 and the data-size ablation.
+
+**Pooled vs. per-dialect table.** One table learned from all dialects scores 70.89 chrF against 70.97 for the
+per-dialect tables (difference +0.07, CI [−0.40, +0.56]): dialect-specific tables do not help on average.
+
+**Training-data size** (per-dialect table, share of training groups, 3 samples each):
+
+| Training data | 10% | 25% | 50% | 100% |
+|---|---|---|---|---|
+| chrF | 59.03 ± 0.87 | 63.82 ± 0.99 | 67.26 ± 0.37 | 70.97 |
+
+The curve is still rising at 100%, so more data would still help the dictionary.
+
+**Leave one dialect out** (pooled table learned from the other four dialects, chrF on the held-out dialect):
+
+| Held-out dialect | Copy | Unseen (other four) | Seen (full dictionary) | Gain over copy when unseen |
+|---|---|---|---|---|
+| Chittagong | 26.00 | 33.69 | 59.66 | +7.7 |
+| Noakhali | 37.56 | 50.59 | 65.82 | +13.0 |
+| Sylhet | 39.79 | 52.64 | 65.49 | +12.9 |
+| Barishal | 42.61 | 56.25 | 76.01 | +13.6 |
+| Mymensingh | 58.67 | 70.63 | 87.96 | +12.0 |
+
+Words learned from the other dialects recover about half of the gap between copy and the seen-dialect
+dictionary, except for Chittagong, the most distant dialect, where only +7.7 transfers. This is the
+reference that the Qwen-7B LODO folds (Week 9) should be compared with.

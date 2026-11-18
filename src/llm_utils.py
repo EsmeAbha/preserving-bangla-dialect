@@ -6,7 +6,7 @@ from common import build_messages, clean_output
 
 MODELS = {
     "qwen7b": "Qwen/Qwen2.5-7B-Instruct",
-    "qwen3b": "Qwen/Qwen2.5-3B-Instruct",  # backup if GPU time runs out
+    "qwen3b": "Qwen/Qwen2.5-3B-Instruct", "qwen05b": "Qwen/Qwen2.5-0.5B-Instruct",  # backup if GPU time runs out
     "llama8b": "meta-llama/Llama-3.1-8B-Instruct",  # gated: accept the licence on HF and set HF_TOKEN
 }
 
