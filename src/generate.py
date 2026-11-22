@@ -14,7 +14,7 @@ import argparse
 import time
 from pathlib import Path
 
-from common import ShotSampler, load_jsonl, write_jsonl
+from common import ShotSampler, load_jsonl, stratified_subset, write_jsonl
 from llm_utils import MODELS, generate, load_model, load_tokenizer
 
 
@@ -31,6 +31,7 @@ def main():
     ap.add_argument("--splits", nargs="*", default=["val"])
     ap.add_argument("--extra_test", nargs="*", default=[], help="e.g. data/processed/onubad.jsonl")
     ap.add_argument("--limit", type=int, default=None, help="first N rows only (smoke test)")
+    ap.add_argument("--subset", type=int, default=None, help="fixed stratified subset, e.g. 500 (as for Groq)")
     ap.add_argument("--batch_size", type=int, default=16)
     ap.add_argument("--out_dir", default="outputs")
     ap.add_argument("--system", default=None, help="output folder name; default <model>_<mode>")
@@ -51,6 +52,8 @@ def main():
     targets = [(sp, data / f"{sp}.jsonl") for sp in args.splits] + [(Path(p).stem, Path(p)) for p in args.extra_test]
     for name, path in targets:
         rows = load_jsonl(path)[: args.limit]
+        if args.subset:
+            rows = stratified_subset(rows, args.subset, seed=0)
         t0 = time.time()
         preds = generate(model, tok, rows, batch_size=args.batch_size, instruction_id=args.instruction,
                          with_dialect=not args.no_dialect_name, shot_sampler=sampler)

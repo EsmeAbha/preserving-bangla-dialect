@@ -47,6 +47,7 @@ def main():
     ap.add_argument("--beams", type=int, default=1, help="1 = greedy, as for the LLMs")
     ap.add_argument("--predict_splits", nargs="*", default=["val", "test"])
     ap.add_argument("--extra_test", nargs="*", default=[])
+    ap.add_argument("--predict_only", action="store_true", help="skip training; predict with <ckpt>/best")
     ap.add_argument("--out_dir", default="outputs")
     ap.add_argument("--ckpt_dir", default="checkpoints")
     args = ap.parse_args()
@@ -65,7 +66,7 @@ def main():
     val_sel = stratified_subset(val, args.val_subset, seed=0)
 
     tok = AutoTokenizer.from_pretrained(args.model, use_fast=False)
-    model = AutoModelForSeq2SeqLM.from_pretrained(args.model).to(dev)
+    model = AutoModelForSeq2SeqLM.from_pretrained(run_dir / "best" if args.predict_only else args.model).to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01)
     steps = math.ceil(len(train) / args.batch_size) * args.epochs
     sched = get_linear_schedule_with_warmup(opt, int(0.05 * steps), steps)
@@ -88,7 +89,7 @@ def main():
 
     best, log, t0 = -1.0, [], time.time()
     model.train()
-    for epoch in range(1, args.epochs + 1):
+    for epoch in range(1, 0 if args.predict_only else args.epochs + 1):
         random.shuffle(train)
         for b in range(0, len(train), args.batch_size):
             part = train[b:b + args.batch_size]
@@ -111,8 +112,9 @@ def main():
             tok.save_pretrained(run_dir / "best")
 
     model = AutoModelForSeq2SeqLM.from_pretrained(run_dir / "best").to(dev)
-    json.dump({"args": vars(args), "best_val_chrf_subset": round(best, 2), "log": log,
-               "normaliser": bt5_normalize is not None}, open(run_dir / "log.json", "w"), indent=2)
+    if not args.predict_only:
+        json.dump({"args": vars(args), "best_val_chrf_subset": round(best, 2), "log": log,
+                   "normaliser": bt5_normalize is not None}, open(run_dir / "log.json", "w"), indent=2)
     targets = [(sp, data / f"{sp}.jsonl") for sp in args.predict_splits] + [(Path(p).stem, Path(p)) for p in args.extra_test]
     for split, path in targets:
         preds = predict(load_jsonl(path))

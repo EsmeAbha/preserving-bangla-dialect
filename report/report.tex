@@ -1,200 +1,197 @@
-% CSC5515 G14 final report -- DRAFT.
-% Move the body into the course LaTeX template in Week 12. Every "\todo{...}" needs a GPU result or a
-% decision; everything else is taken from the proposal or computed from the real data (docs/week7_data_report.md).
-\documentclass[11pt]{article}
-\usepackage[margin=2.5cm]{geometry}
+% CSC5515 G14 final report. Every number below is computed from the released data and the outputs in
+% outputs/ by the scripts in src/ (see results/ and docs/week7_data_report.md). Build: xelatex report.tex (twice).
+\documentclass[10pt,twocolumn]{article}
+\usepackage[a4paper,margin=1.9cm,columnsep=0.7cm]{geometry}
 \usepackage{fontspec}
 \usepackage{polyglossia}
 \setdefaultlanguage{english}
 \setotherlanguage{bengali}
-\newfontfamily\bengalifont[Script=Bengali]{Noto Sans Bengali}
+\setmainfont{Latin Modern Roman}
+\newfontfamily\bengalifont[Script=Bengali,Scale=0.92]{Noto Sans Bengali}
 \usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{xcolor}
-\usepackage{hyperref}
-\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\usepackage[hidelinks]{hyperref}
 \newcommand{\bn}[1]{\textbengali{#1}}
+\newcommand{\pmsd}[1]{{\scriptsize$\pm$#1}}
+\setlength{\tabcolsep}{4pt}
 
-\title{Fine-Tuning an LLM to Translate Bangla Regional Dialects into Standard Bangla}
-\author{Esm-e Moula Chowdhury Abha (26-94089-2)\\CSC5515 Natural Language Processing, Group G14}
-\date{December 2026}
+\title{\Large\textbf{Small Fine-Tuned Models, Not Prompted LLMs: Translating Bangla Regional Dialects into
+Standard Bangla, and What Dialect Distance Explains}}
+\author{Esm-e Moula Chowdhury Abha (26-94089-2)\\[2pt]
+\small CSC5515 Natural Language Processing, Group G14\\
+\small\url{https://github.com/EsmeAbha/preserving-bangla-dialect}}
+\date{}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-\todo{Write last. One sentence each: task, method (QLoRA on Qwen2.5-7B-Instruct), data (Vashantor, ONUBAD),
-main result (chrF and human rating vs.\ prompting), dialect finding (RQ2), transfer finding (RQ3).}
+«ABSTRACT»
 \end{abstract}
 
 \section{Introduction}
 Bangla is spoken in many regional dialects. Chittagonian and Sylheti differ so much from standard Bangla
-that many speakers from other regions cannot follow them: the same sentence can use different words, verb
-endings and pronouns while its meaning stays the same. Large language models are trained mostly on standard
-written Bangla and often misread dialect text in social-media posts, customer messages or call-centre
-transcripts. A model that rewrites dialect text into standard Bangla without changing its meaning lets
-existing Bangla tools work on such text. This project fine-tunes a small open-weight LLM for this task and
-measures how well meaning is preserved.
+that many speakers from other regions cannot follow them: the same sentence uses different words, verb
+endings and pronouns while its meaning stays the same (Table~\ref{tab:examples}). Language technology for
+Bangla is built almost entirely on standard written Bangla, so dialect text in social-media posts, customer
+messages or call-centre transcripts is often misread. A system that rewrites dialect text into standard Bangla
+\emph{without changing its meaning} lets existing Bangla tools work on such text.
 
-\begin{itemize}
-\item \textbf{RQ1.} Does a QLoRA-tuned LLM preserve meaning better than zero-shot and few-shot prompting of
-the same model, measured by chrF, LaBSE similarity and human ratings?
-\item \textbf{RQ2.} Which dialects are hardest, and is the difficulty explained by word-level distance from
-standard Bangla, defined as 100 minus the chrF of the copy baseline?
-\item \textbf{RQ3.} Can a model trained on four dialects translate a fifth dialect it has not seen?
+Instruction-tuned large language models (LLMs) are an obvious candidate, because they can be prompted with a
+short instruction and a few examples. We test whether this is enough, and compare prompting with fine-tuning
+a small open-weight LLM with low-rank adapters (LoRA) \cite{lora,qlora}, with a fine-tuned Bangla
+sequence-to-sequence model (BanglaT5) \cite{banglat5}, and with two simple baselines that turn out to matter:
+copying the input, and a word-replacement dictionary learned from the training pairs. We ask three questions:
+
+\begin{itemize}\setlength\itemsep{1pt}
+\item \textbf{RQ1.} Does a fine-tuned LLM preserve meaning better than zero-shot and few-shot prompting?
+\item \textbf{RQ2.} Which dialects are hardest, and is the difficulty explained by the word-level distance of
+the dialect from standard Bangla, measured as $100-\mathrm{chrF}$ of the copy baseline?
+\item \textbf{RQ3.} How much of what is learned for four dialects transfers to a fifth, unseen dialect?
 \end{itemize}
+
+\noindent Our contributions are:
+(i) a leakage-free re-split of Vashantor \cite{vashantor} that keeps all dialect versions of a standard
+sentence in one split, and the finding that 323 of the 2,796 ONUBAD \cite{onubad} pairs, often used as a
+separate test set, share their standard sentence with Vashantor training data;
+(ii) evidence that prompting a 3B instruction-tuned LLM is no better than copying the input, whereas a 0.5B
+LLM fine-tuned with LoRA on CPU «RQ1_SHORT»;
+(iii) a word-replacement dictionary baseline that is «DICT_SHORT», which earlier work did not report;
+(iv) a dialect-distance measure that predicts per-sentence difficulty for every system (RQ2) and a
+leave-one-dialect-out study (RQ3); and (v) an automatic word-level error profile that separates
+\emph{kept dialect words} from \emph{invented words}.
+All code, splits and outputs are public.
+
+\begin{table}[t]\centering\small
+\begin{tabular}{@{}l@{\hspace{6pt}}l@{}}\toprule
+Standard & \bn{আজকে আমার মন ভালো নেই} (I am not in a good mood today)\\\midrule
+Chittagong & \bn{আযিয়া আর মন বালা নাই?}\\
+Noakhali & \bn{আইজ্জা আর মন ভালা নাই}\\
+Sylhet & \bn{আইজকু আমার মন ভালা নায়}\\
+Barishal & \bn{আইজ মোর মনডা ভালোনা}\\
+Mymensingh & \bn{আইজ আমার মন ভালা নাই}\\\bottomrule
+\end{tabular}
+\caption{One Vashantor standard sentence and its five dialect versions.}\label{tab:examples}
+\end{table}
 
 \section{Related work}
 Faria et al.\ \cite{vashantor} released Vashantor, a parallel corpus of five dialects and standard Bangla,
 and fine-tuned mT5 and BanglaT5 \cite{banglat5}, reporting BLEU from 36.75 (Chittagong) to 69.06
 (Mymensingh). Jawad et al.\ \cite{jawad} benchmarked zero- and few-shot prompting of LLMs on 600 YouTube
-comments in four dialects and found that transliteration helps closed models. Sami et al.\ \cite{sami}
-used retrieval-augmented prompting for the opposite direction, standard-to-dialect. Sultana et al.\
-\cite{onubad} collected ONUBAD, a separate corpus of Chittagong, Sylhet and Barishal sentences, which we use
-as an out-of-domain test set. We fine-tune instruction-tuned LLMs with QLoRA \cite{lora,qlora}, measure
-meaning with chrF \cite{chrf}, LaBSE \cite{labse} and human ratings, and add leave-one-dialect-out transfer.
+comments in four dialects and found that transliteration helps closed models. Sami et al.\ \cite{sami} used
+retrieval-augmented prompting for the opposite direction, standard-to-dialect. Sultana et al.\ \cite{onubad}
+collected ONUBAD, a separate corpus of Chittagong, Sylhet and Barishal sentences. We add a fine-tuned LLM,
+simple but strong baselines, a significance-tested comparison over several runs, an explicit distance measure
+for dialect difficulty, and leave-one-dialect-out transfer.
 
 \section{Data}
-\paragraph{Vashantor.} Mendeley Data V2 (doi:10.17632/bj5jgk878b.2, CC BY 4.0), CSV release. Each file pairs
-a dialect sentence (\texttt{<dialect>\_bangla\_speech}) with its standard sentence (\texttt{bangla\_speech});
-Banglish, English and region columns are not used. The official split has 1,875 / 250 / 375 pairs per
-dialect. Cleaning (Unicode NFC, zero-width characters removed, whitespace collapsed) removed no pairs:
-the release has no empty and no exact duplicate pairs.
+\paragraph{Vashantor.} Mendeley Data V2 (doi:10.17632/bj5jgk878b.2, CC BY 4.0). Each pair joins a dialect
+sentence with its standard sentence; Banglish, English and region columns are not used. The official split
+has 1,875 / 250 / 375 pairs per dialect. Cleaning (Unicode NFC, zero-width characters removed, whitespace
+collapsed) removed no pairs: the release has no empty and no duplicate pairs.
 
-\paragraph{Alignment of splits.} The same standard sentences are translated into all five dialects, so a
-test sentence must not appear in training through another dialect. Pairs are grouped by their standard
-sentence, ignoring punctuation and spaces, and a group found in more than one split is moved entirely to its
-test or validation split. One standard sentence (\bn{আপনি কেমন আছেন?}) occurred in both the training and
-the validation split; its 5 training pairs were moved, giving 1,874 / 251 / 375 pairs per dialect
-(Table~\ref{tab:data}). Seventeen groups have fewer than five members because the standard sentence is spelled
-differently in some dialect files (e.g.\ \bn{নিষেধ}/\bn{নিশেধ}); each lies in a single split. Five validation
-and five test standard sentences differ from a training sentence by one word (e.g.\ \bn{আমার}/\bn{তোমার
-বন্ধুরা}~\ldots); they are different sentences and are kept.
+\paragraph{Leakage-free split.} The same standard sentences are translated into all five dialects, so a test
+sentence must not reach training through another dialect. We group pairs by their standard sentence,
+ignoring punctuation and spaces; a group found in more than one split is moved entirely to its test (else
+validation) split. One sentence (\bn{আপনি কেমন আছেন?}) was in both training and validation; its five
+training pairs were moved, giving 1,874 / 251 / 375 pairs per dialect (Table~\ref{tab:data}).
+Seventeen groups have fewer than five members because the standard sentence is spelled differently in some
+files (e.g.\ \bn{নিষেধ}/\bn{নিশেধ}); each still lies in one split.
 
-\begin{table}[h]\centering
-\begin{tabular}{lrrrr}\toprule
-Split & Pairs & Per dialect & Standard sentences & Mean words \\\midrule
+\begin{table}[t]\centering\small
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Split & Pairs & Per dialect & Std.\ sentences & Words \\\midrule
 Train & 9,370 & 1,874 & 1,876 & 6.7 \\
 Validation & 1,255 & 251 & 250 & 5.5 \\
-Test & 1,875 & 375 & 381 & 7.3 \\\bottomrule
+Test & 1,875 & 375 & 381 & 7.3 \\\midrule
+ONUBAD (all) & 2,796 & 930--935 & -- & -- \\
+ONUBAD (novel) & 2,437 & -- & -- & -- \\\bottomrule
 \end{tabular}
-\caption{Vashantor after cleaning and alignment (mean words of the standard sentence).}\label{tab:data}
+\caption{Data after cleaning and alignment (words: mean length of the standard sentence). ONUBAD covers
+Chittagong, Sylhet and Barishal only.}\label{tab:data}
 \end{table}
 
-\paragraph{ONUBAD.} Mendeley Data V2 (doi:10.17632/6ft99kf89b.2, CC BY 4.0). Only the sentence file is used
-(the word and clause files are not). After removing 144 duplicate pairs there are 2,796 pairs (Chittagong
-935, Sylhet 931, Barishal 930). \textbf{323 pairs have a standard sentence that also occurs in the Vashantor
-training set} and 126 a dialect sentence that does, so they are not really out-of-domain. We therefore report
-ONUBAD both in full and as the 2,437 \emph{novel} pairs without this overlap.
+\paragraph{ONUBAD.} Mendeley Data V2 (doi:10.17632/6ft99kf89b.2, CC BY 4.0); we use only its sentence
+file. After removing 144 duplicates there are 2,796 pairs. \textbf{323 pairs have a standard sentence that
+also occurs in the Vashantor training set} and 126 a dialect sentence that does, so they are not really
+out-of-domain. We report ONUBAD on the 2,437 \emph{novel} pairs without this overlap.
 
-\section{Method}
-\paragraph{Models.} Main model: Qwen2.5-7B-Instruct \cite{qwen}; second model: Llama-3.1-8B-Instruct
-\cite{llama}. Llama-3.3-70B-Instruct is run zero-shot through the Groq API as a reference for a much larger
-untuned model.
+\section{Systems}
+\paragraph{Copy.} The input is returned unchanged. Its chrF against the reference measures how far a
+dialect is from standard Bangla; we define \emph{dialect distance} $=100-\mathrm{chrF}_{\text{copy}}$.
 
-\paragraph{Baselines.} (i) \emph{Copy}: the input is output unchanged. (ii) \emph{Dictionary}: per dialect,
-word replacements are learned from training pairs aligned with a longest-matching-block alignment of the two
-token sequences; each dialect word is replaced by its most frequent standard form, unknown words are copied.
-(iii) Zero-shot prompting with the instruction below (three paraphrases = three runs) and (iv) 5-shot prompting
-with examples from the same dialect's training split (three draws).
+\paragraph{Dictionary.} Per dialect, the two token sequences of each training pair are aligned with a
+longest-matching-block alignment; aligned one-to-one and one-to-many replacements are counted, and each dialect
+word is replaced by its most frequent standard form at test time. Unknown words are copied. A \emph{pooled}
+variant learns one table from all dialects.
 
-\begin{quote}\small\ttfamily
-Rewrite the following sentence from the \{dialect\} dialect into standard Bangla.\\
-Keep the meaning unchanged. Output only the standard Bangla sentence.\\
-Dialect sentence: \{text\}\\
-Standard Bangla:
-\end{quote}
+\paragraph{Prompted LLM.} Qwen2.5-3B-Instruct \cite{qwen} in bf16, with its chat template and the
+instruction ``\emph{Rewrite the following sentence from the \{dialect\} dialect into standard Bangla. Keep the
+meaning unchanged. Output only the standard Bangla sentence.}'' followed by the sentence. Zero-shot uses three
+paraphrases of the instruction (three runs); 5-shot adds five training pairs of the same dialect as earlier
+chat turns, with three random draws (three runs).
 
-\paragraph{QLoRA fine-tuning.} 4-bit NF4 base model, LoRA rank 32, $\alpha=64$, dropout 0.05 on all linear
-layers, learning rate $2\cdot10^{-4}$ with cosine schedule and 3\% warm-up, effective batch 16, 2 epochs,
-maximum length 256 tokens, loss on the answer tokens only; the same chat template is used for prompting and
-fine-tuning. Validation chrF on a fixed stratified 250-pair validation subset is measured twice per epoch and
-the best adapter is kept. Llama-3.1-8B uses the same settings. BanglaT5 is fully fine-tuned (fp32, learning rate
-$3\cdot10^{-4}$, batch 16, best of 8 epochs by validation chrF) on inputs of the form
-``\texttt{<Dialect>: <sentence>}'' normalised with the BanglaT5 normaliser.
+\paragraph{Fine-tuned LLM.} Qwen2.5-0.5B-Instruct with LoRA adapters (rank 32, $\alpha=64$, dropout 0.05) on
+all linear layers (17.6M trainable parameters, 3.4\%), trained on the same prompt as zero-shot with the loss
+on the answer tokens only. AdamW, learning rate $2\cdot10^{-4}$, cosine schedule with 3\% warm-up,
+effective batch 16, «FT_EPOCHS», maximum length 256 tokens, bf16 autocast. Validation chrF on a fixed
+stratified 250-pair subset is measured twice per epoch and the best adapter is kept. Training ran on four CPU
+cores (about 22\,s per step).
 
-\paragraph{Decoding.} Greedy, at most 128 new tokens, stopping at the end-of-turn token. Empty or unusable
-outputs are kept and scored 0.
+\paragraph{BanglaT5.} \texttt{csebuetnlp/banglat5} \cite{banglat5}, fully fine-tuned in fp32 on inputs
+``\texttt{<Dialect>: <sentence>}'' normalised with the BanglaT5 normaliser (learning rate $3\cdot10^{-4}$,
+batch 16). On CPU we could afford one epoch (63 minutes).
 
-\paragraph{Runs.} \todo{Final run table with actual GPU hours from checkpoints/*/log.json.}
+\paragraph{Decoding.} Greedy, at most 128 new tokens, stopping at the end-of-turn token; the first non-empty
+line is kept and prefixes such as ``Standard Bangla:'' are removed. Empty outputs are scored, not dropped.
 
 \section{Evaluation}
-chrF (sacreBLEU) is the primary metric; BLEU is reported for comparison with \cite{vashantor}; LaBSE cosine
-similarity between output and reference is the secondary meaning measure. Results are mean $\pm$ std over
-three runs, with 95\% paired bootstrap confidence intervals (1,000 resamples) for differences. Dialect
-distance is $100-\mathrm{chrF}$ of the copy baseline, with the copy baseline's word error rate as a check.
-150 test outputs are rated 1--5 for meaning, blind to the system; a second annotator rates 50 of them and
-agreement is quadratic-weighted Cohen's $\kappa$.
+chrF \cite{chrf} (sacreBLEU) is the primary metric, because dialect and standard forms often share
+characters but not whole words; BLEU is reported for comparison with \cite{vashantor}; LaBSE \cite{labse}
+cosine similarity between output and reference is a meaning measure that does not depend on spelling.
+Systems with several runs are reported as mean $\pm$ standard deviation. Differences are tested with a
+paired bootstrap over sentences (1,000 resamples, chrF recomputed from sufficient statistics, runs averaged)
+and reported with 95\% confidence intervals. Prompts, the 5-shot draw and the checkpoint were chosen on
+validation only; the test split was scored once, at the end. Because the prompted 3B model needs about
+1.4--5\,s per sentence on CPU, it was run on the test split on a fixed stratified subset of 500 pairs
+(100 per dialect), using the best zero-shot instruction and the best 5-shot draw on validation; all other
+systems are reported on the same subset as well as on the full test set.
 
 \section{Results}
-\subsection{Baselines and dialect distance (validation)}
-\begin{table}[h]\centering\small
-\begin{tabular}{lrrrrrrrr}\toprule
-System & Chit. & Noak. & Sylh. & Bari. & Myme. & chrF & BLEU & LaBSE\\\midrule
-Copy & 26.00 & 37.56 & 39.79 & 42.61 & 58.67 & 40.95 & 10.43 & 0.67\\
-Dictionary & 59.66 & 65.82 & 65.49 & 76.01 & 87.96 & 70.97 & 44.78 & 0.91\\\bottomrule
-\end{tabular}
-\caption{Non-LLM baselines on Vashantor validation (chrF per dialect and overall).}\label{tab:baselines}
-\end{table}
+«RESULTS»
 
-Dialect distance on validation: Chittagong 74.0 (copy WER 90.8), Noakhali 62.4 (72.7), Sylhet 60.2 (73.9),
-Barishal 57.4 (65.1), Mymensingh 41.3 (45.7). The ranking matches the earlier finding that Chittagonian is the
-hardest dialect \cite{vashantor}. The dictionary baseline is already strong (71.0 chrF), so the LLM systems must
-be compared against it, not only against the copy baseline.
+\section{Discussion}
+«DISCUSSION»
 
-\subsection{Preliminary CPU runs (validation)}
-Before the GPU runs, two smaller systems were run on CPU to test the pipeline end to end
-(Table~\ref{tab:cpu}). BanglaT5 after a single epoch (63 minutes on 4 CPU cores) is already close to the
-dictionary baseline but 1.1 chrF below it (95\% CI $[-2.2, -0.1]$). Qwen2.5-3B-Instruct without fine-tuning
-does not beat copying the input: zero-shot is 1.1 chrF below the copy baseline (CI $[-1.6, -0.6]$), and
-5-shot examples add 1.1 chrF over zero-shot (CI $[+0.6, +1.7]$), which only brings it level with copying (+0.1, CI $[-0.6, +0.7]$). Its outputs are rarely copies (1--7\%) and almost never English,
-but they keep many dialect words, change pronouns or tense, or invent non-words. Even so, the copy-based
-distance predicts its zero-shot per-sentence chrF closely (Spearman $\rho=-0.90$, CI $[-0.91, -0.89]$). These runs
-motivate fine-tuning (RQ1) and show that prompting a small model is not enough.
+\section{Limitations}
+\paragraph{Compute.} All experiments ran on four CPU cores without a GPU. The planned main systems,
+QLoRA-tuned Qwen2.5-7B-Instruct and Llama-3.1-8B-Instruct, and Llama-3.3-70B prompting, are implemented in the
+repository (a Kaggle notebook runs them end to end) but are not reported here; the fine-tuned model is 0.5B and
+the prompted model 3B. BanglaT5 had one epoch instead of eight, the fine-tuned LLM one seed, and the
+leave-one-dialect-out study uses the dictionary only. Our conclusions about prompting therefore apply to
+small open models; larger models may prompt better.
 
-\begin{table}[h]\centering\small
-\begin{tabular}{lrrrrrrrr}\toprule
-System & Chit. & Noak. & Sylh. & Bari. & Myme. & chrF & BLEU & LaBSE\\\midrule
-BanglaT5, 1 epoch & 55.09 & 64.71 & 67.34 & 75.53 & 86.41 & 69.86 & 46.65 & 0.91\\
-Qwen2.5-3B zero-shot (3 runs) & 27.98 & 35.28 & 40.54 & 40.46 & 54.97 & 39.87$\pm$0.76 & 9.52 & 0.68\\
-Qwen2.5-3B 5-shot (3 runs) & 29.63 & 36.84 & 41.38 & 41.53 & 55.56 & 41.01$\pm$0.35 & 10.09 & 0.70\\\bottomrule
-\end{tabular}
-\caption{Preliminary CPU runs on Vashantor validation. Not final systems.}\label{tab:cpu}
-\end{table}
+\paragraph{Contamination.} Vashantor has been public since 2023, so pretrained models may have seen it.
+ONUBAD is not fully independent of Vashantor (323 shared standard sentences), so we use its novel part.
 
-\subsection{Main comparison (RQ1)} \todo{results/test/main\_table.md and significance.md.}
-\subsection{Which dialects are hardest (RQ2)} \todo{results/test/rq2.md: Spearman $\rho$ with CI.}
-\subsection{Leave-one-dialect-out (RQ3)} \todo{results/lodo/test/rq3\_lodo.md.}
-\subsection{Ablations} \todo{results/ablations/test/main\_table.md.}
-\subsection{Out-of-domain and contamination}
-Baselines on ONUBAD (all 2,796 pairs / 2,437 novel pairs): copy 37.3 / 37.6 chrF, dictionary 60.8 / 59.5
-chrF (LaBSE 0.86 / 0.85). The dictionary loses about 10 chrF out of domain, because many ONUBAD words do not
-occur in Vashantor training. \todo{results/onubad*/main\_table.md; compare zero-shot on
-Vashantor and on novel ONUBAD.}
-\subsection{Human evaluation} \todo{human\_eval/human\_eval\_results.md.}
-\subsection{Error analysis} \todo{error\_analysis/error\_summary.md with examples.}
+\paragraph{Data and metrics.} Vashantor sentences are short and conversational, and its test set covers a
+limited set of topics; ONUBAD covers three dialects. chrF rewards surface overlap and can miss meaning errors
+such as a changed negation; LaBSE and our negation check catch some of these, but we have no human ratings, so
+``meaning preserved'' is measured only automatically.
 
-\section{Discussion and limitations}
-\paragraph{Contamination.} Vashantor has been public since 2023, so the pretrained models may have seen its
-test sentences. ONUBAD (2025) is used as a check, but it is not fully independent of Vashantor: 323 of its
-2,796 pairs share a standard sentence with Vashantor training data and 126 share a dialect sentence. All
-ONUBAD results are therefore also reported on the 2,437 novel pairs. If a system's advantage shrinks much more
-on novel ONUBAD than the baselines' does, memorisation is a likely cause.
+\section{Conclusion}
+«CONCLUSION»
 
-\paragraph{Data.} Vashantor's standard sentences are shared across the five dialects, so the split is made by
-standard sentence; this prevents the same meaning from appearing in training and test, but it also means the
-test set covers a limited set of topics and short conversational sentences. ONUBAD covers only three dialects.
-Some dialect sentences differ from standard Bangla only in spelling, and a few validation and test pairs are
-near-copies, which favour conservative systems.
+\paragraph{Reproducibility.} \texttt{src/prepare\_data.py} and \texttt{src/prepare\_onubad.py} build the
+splits; \texttt{src/baselines.py}, \texttt{src/dictionary\_experiments.py}, \texttt{src/generate.py},
+\texttt{src/train\_qlora.py} and \texttt{src/train\_banglat5.py} produce the outputs; \texttt{src/evaluate.py}
+and \texttt{src/auto\_error\_analysis.py} produce every table in \texttt{results/}.
 
-\paragraph{Metrics and annotation.} chrF rewards surface overlap and can miss meaning errors such as changed
-negation or tense; LaBSE and the human ratings are meant to catch these. Human ratings come from one annotator,
-with a second annotator on only 50 items, so the agreement estimate has a wide confidence interval.
-
-\paragraph{Runs.} The main systems use three runs, but the ablations and the leave-one-dialect-out folds use a
-single seed because of the GPU budget, so small differences there should not be over-interpreted. Llama-3.3-70B
-is evaluated on a 500-pair subset only.
-
-\begin{thebibliography}{11}\small
+{\small
+\begin{thebibliography}{11}
 \bibitem{vashantor} F.~T.~J. Faria, M.~B. Moin, A.~A. Wase, M.~Ahmmed, M.~R. Sani, T.~Muhammad. Vashantor: A
 large-scale multilingual benchmark dataset for automated translation of Bangla regional dialects to Bangla
 language. arXiv:2311.11142, 2023.
@@ -213,6 +210,5 @@ dialectal sentiment analysis. BLP-2025, pp.~322--337, 2025.
 \bibitem{sami} K.~M.~J. Sami, D.~Sumit, A.~Hossain, F.~Sadeque. A comparative analysis of retrieval-augmented
 generation techniques for Bengali standard-to-dialect machine translation using LLMs. arXiv:2512.14179, 2025.
 \bibitem{qwen} Qwen Team. Qwen2.5 technical report. arXiv:2412.15115, 2024.
-\bibitem{llama} A.~Grattafiori et al. The Llama 3 herd of models. arXiv:2407.21783, 2024.
-\end{thebibliography}
+\end{thebibliography}}
 \end{document}
