@@ -11,6 +11,12 @@ dictionary,run1,sylhet,65.4873,31.9835,0.8969,45.4019,251,0
 dictionary,run1,barishal,76.0119,53.908,0.9325,27.6611,251,0
 dictionary,run1,mymensingh,87.9598,71.917,0.9778,15.8581,251,0
 dictionary,run1,all,70.9664,44.78,0.9109,35.3316,1255,0
+dictionary_pooled,run1,chittagong,59.6283,27.8628,0.8607,48.4081,251,0
+dictionary_pooled,run1,noakhali,67.6007,39.1474,0.8949,37.9435,251,0
+dictionary_pooled,run1,sylhet,65.2413,31.4104,0.9156,45.0398,251,0
+dictionary_pooled,run1,barishal,76.4461,54.4232,0.9352,27.3715,251,0
+dictionary_pooled,run1,mymensingh,85.577,66.9611,0.9774,17.8132,251,0
+dictionary_pooled,run1,all,70.894,44.1621,0.9168,35.3171,1255,0
 banglat5_cpu1ep,s1,chittagong,55.0935,28.8433,0.8173,51.6643,251,0
 banglat5_cpu1ep,s1,noakhali,64.7074,39.4517,0.8901,40.1159,251,0
 banglat5_cpu1ep,s1,sylhet,67.3437,41.8847,0.9125,39.8262,251,0
@@ -53,3 +59,9 @@ qwen3b_fewshot,s3,sylhet,40.9945,9.3695,0.7049,75.0905,251,0
 qwen3b_fewshot,s3,barishal,41.9948,9.3125,0.7365,70.7458,251,0
 qwen3b_fewshot,s3,mymensingh,55.2978,19.3792,0.8084,54.1636,251,0
 qwen3b_fewshot,s3,all,40.6628,9.8857,0.699,72.618,1255,0
+qwen05b_lora_ep05,s1,chittagong,45.781,15.388,0.7174,68.5239,251,0
+qwen05b_lora_ep05,s1,noakhali,56.4426,26.9,0.8197,50.0362,251,0
+qwen05b_lora_ep05,s1,sylhet,57.4121,27.3056,0.8379,52.9327,251,0
+qwen05b_lora_ep05,s1,barishal,60.3528,32.2608,0.834,44.5329,251,0
+qwen05b_lora_ep05,s1,mymensingh,75.4967,48.4523,0.9211,29.9059,251,0
+qwen05b_lora_ep05,s1,all,59.0718,30.2611,0.826,49.1891,1255,0

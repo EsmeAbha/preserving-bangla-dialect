@@ -18,6 +18,7 @@
 \newcommand{\bn}[1]{\textbengali{#1}}
 \newcommand{\pmsd}[1]{{\scriptsize$\pm$#1}}
 \setlength{\tabcolsep}{4pt}
+\raggedbottom
 
 \title{\Large\textbf{Small Fine-Tuned Models, Not Prompted LLMs: Translating Bangla Regional Dialects into
 Standard Bangla, and What Dialect Distance Explains}}
@@ -116,9 +117,9 @@ training pairs were moved, giving 1,874 / 251 / 375 pairs per dialect (Table~\re
 Seventeen groups have fewer than five members because the standard sentence is spelled differently in some
 files (e.g.\ \bn{নিষেধ}/\bn{নিশেধ}); each still lies in one split.
 
-\begin{table}[t]\centering\small
+\begin{table}[t]\centering\footnotesize
 \begin{tabular}{@{}lrrrr@{}}\toprule
-Split & Pairs & Per dialect & Std.\ sentences & Words \\\midrule
+Split & Pairs & Per dialect & Std.\ sent. & Words \\\midrule
 Train & 9,370 & 1,874 & 1,876 & 6.7 \\
 Validation & 1,255 & 251 & 250 & 5.5 \\
 Test & 1,875 & 375 & 381 & 7.3 \\\midrule
@@ -169,7 +170,7 @@ characters but not whole words; BLEU is reported for comparison with \cite{vasha
 cosine similarity between output and reference is a meaning measure that does not depend on spelling.
 Systems with several runs are reported as mean $\pm$ standard deviation. Differences are tested with a
 paired bootstrap over sentences (1,000 resamples, chrF recomputed from sufficient statistics, runs averaged)
-and reported with 95\% confidence intervals. Prompts, the 5-shot draw and the checkpoint were chosen on
+and reported with 95\% confidence intervals (CI). Prompts, the 5-shot draw and the checkpoint were chosen on
 validation only; the test split was scored once, at the end. Because the prompted 3B model needs about
 1.4--5\,s per sentence on CPU, it was run on the test split on a fixed stratified subset of 500 pairs
 (100 per dialect), using the best zero-shot instruction and the best 5-shot draw on validation; all other
@@ -181,23 +182,24 @@ Prompting is stable but weak. Over three instruction paraphrases, zero-shot Qwen
 39.9\pmsd{0.8} chrF on validation, and over three example draws 5-shot scores 41.0\pmsd{0.4}, against 41.0
 for copying the input; the 5-shot gain over zero-shot is small but significant ($+1.1$, CI $[+0.6, +1.7]$).
 We kept the best paraphrase (40.5) and the best draw (41.4) for the test runs. The fine-tuned 0.5B model
-scores -- on validation. Dictionary and BanglaT5 score 71.0 and 69.9.
+scores 59.1 on validation. Dictionary and BanglaT5 score 71.0 and 69.9.
 
 \input{tables/sub500}
 \input{tables/main}
 
 \subsection{RQ1: prompting versus fine-tuning}
 On the 500-pair test subset (Table~\ref{tab:sub500}, differences in Table~\ref{tab:sig}), zero-shot
-Qwen2.5-3B scores 44.3 chrF, \emph{below} copying the input (45.4; $-1.1$ chrF (95\% CI $[-1.8, -0.4]$)). Five examples
-add little ($+0.5$ chrF (95\% CI $[-0.5, +1.4]$)) and do not lift it above copying ($-0.6$ chrF (95\% CI $[-1.7, +0.4]$)); LaBSE agrees (0.71--0.73 against
+Qwen2.5-3B scores 44.3 chrF, \emph{below} copying the input at 45.4 ($-1.1$ chrF, CI $[-1.8, -0.4]$). Five examples
+add little ($+0.5$ chrF, CI $[-0.5, +1.4]$) and do not lift it above copying ($-0.6$ chrF, CI $[-1.7, +0.4]$); LaBSE agrees (0.71--0.73 against
 0.71 for copying). Fine-tuning changes the picture: Qwen2.5-0.5B, six times smaller, reaches 59.9 chrF
-after half an epoch of training, $+15.2$ chrF (95\% CI $[+13.5, +16.8]$) above 5-shot and $+15.6$ chrF (95\% CI $[+14.2, +17.2]$) above zero-shot prompting, with LaBSE 0.83.
+after half an epoch of training, clearly above 5-shot ($+15.2$ chrF, CI $[+13.5, +16.8]$) and zero-shot prompting ($+15.6$ chrF, CI $[+14.2, +17.2]$), with LaBSE
+0.83.
 For models of this size the answer to RQ1 is clearly yes.
 
 Fine-tuning a general LLM is, however, not the best use of the training data (Table~\ref{tab:main}). On the
-full test set the 0.5B model (59.4 chrF) is $-10.9$ chrF (95\% CI $[-11.7, -10.1]$) behind the dictionary and $-11.5$ chrF (95\% CI $[-12.4, -10.6]$) behind
-BanglaT5. BanglaT5 after one epoch and the dictionary are statistically tied ($+0.6$ chrF (95\% CI $[-0.2, +1.4]$)). One pooled
-dictionary is better than per-dialect tables (per-dialect minus pooled: $-1.3$ chrF (95\% CI $[-1.6, -0.9]$)), although on
+full test set the 0.5B model (59.4 chrF) is behind both the dictionary ($-10.9$ chrF, CI $[-11.7, -10.1]$) and BanglaT5
+($-11.5$ chrF, CI $[-12.4, -10.6]$). BanglaT5 after one epoch and the dictionary are statistically tied ($+0.6$ chrF, CI $[-0.2, +1.4]$). One pooled
+dictionary is better than per-dialect tables (per-dialect minus pooled: $-1.3$ chrF, CI $[-1.6, -0.9]$), although on
 validation the two were equal ($+0.1$, CI $[-0.4, +0.6]$): many replacements are shared between dialects, so
 dialect-specific tables only lose data.
 
@@ -232,7 +234,7 @@ LLMs needs GPU time and is left for future work.
 All systems lose on novel ONUBAD (Table~\ref{tab:onubad}): the dictionary 10.8 chrF (to
 59.5), BanglaT5 8.5 (to 62.4) and the fine-tuned LLM 12.3 (to 47.1), while
 copying the input scores 37.6. ONUBAD contains only three dialects, including the hardest, so part of
-the drop comes from the dialect mix. Out of domain BanglaT5 beats the dictionary ($+2.9$ chrF (95\% CI $[+1.9, +4.0]$)): a model
+the drop comes from the dialect mix. Out of domain BanglaT5 beats the dictionary ($+2.9$ chrF, CI $[+1.9, +4.0]$): a model
 of the language generalises to unseen words, a lookup table cannot.
 
 \input{tables/onubad}
@@ -297,10 +299,10 @@ for every system (RQ2), and about half of the dictionary knowledge needed for a 
 other four (RQ3). The next steps are the GPU runs already implemented in the repository (QLoRA on Qwen2.5-7B and
 Llama-3.1-8B, leave-one-dialect-out fine-tuning) and a human evaluation of meaning preservation.
 
-\paragraph{Reproducibility.} \texttt{src/prepare\_data.py} and \texttt{src/prepare\_onubad.py} build the
+{\raggedright\paragraph{Reproducibility.} \texttt{src/prepare\_data.py} and \texttt{src/prepare\_onubad.py} build the
 splits; \texttt{src/baselines.py}, \texttt{src/dictionary\_experiments.py}, \texttt{src/generate.py},
 \texttt{src/train\_qlora.py} and \texttt{src/train\_banglat5.py} produce the outputs; \texttt{src/evaluate.py}
-and \texttt{src/auto\_error\_analysis.py} produce every table in \texttt{results/}.
+and \texttt{src/auto\_error\_analysis.py} produce every table in \texttt{results/}; \texttt{scripts/paper\_tables.sh} and \texttt{report/build\_report.py} rebuild this paper.\par}
 
 {\small
 \begin{thebibliography}{11}
