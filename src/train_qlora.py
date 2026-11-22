@@ -102,6 +102,9 @@ def main():
     ap.add_argument("--extra_test", nargs="*", default=[])
     ap.add_argument("--max_steps", type=int, default=None, help="smoke test only")
     ap.add_argument("--no_4bit", action="store_true", help="full-precision LoRA (CPU smoke test only)")
+    ap.add_argument("--save_every", type=int, default=50,
+                    help="write a resumable checkpoint (last.pt) every N optimiser steps; 0 = never")
+    ap.add_argument("--resume", action="store_true", help="continue from <ckpt_dir>/<name>_s<seed>/last.pt")
     ap.add_argument("--cpu_fast", action="store_true",
                     help="CPU only: bf16 autocast and no gradient checkpointing (small models)")
     ap.add_argument("--out_dir", default="outputs")
@@ -173,12 +176,39 @@ def main():
 
     log, best, best_state, step, t0 = [], -1.0, None, 0, time.time()
     rng = random.Random(args.seed)
+    epoch, skip, prev_minutes = 0, 0, 0.0
+    last_path = run_dir / "last.pt"
+    if args.resume and last_path.exists():
+        ck = torch.load(last_path, map_location="cpu", weights_only=False)
+        model.load_state_dict(ck["lora"], strict=False)
+        opt.load_state_dict(ck["opt"])
+        sched.load_state_dict(ck["sched"])
+        scaler.load_state_dict(ck["scaler"])
+        log, best, best_state, step = ck["log"], ck["best"], ck["best_state"], ck["step"]
+        epoch, skip, prev_minutes = ck["epoch"], ck["micro"], ck["minutes"]
+        for _ in range(epoch):  # replay the shuffles of finished epochs so the data order is unchanged
+            rng.shuffle(list(range(len(examples))))
+        print(f"resumed at step {step} (epoch {epoch}, micro-batch {skip}), best so far {best:.2f}")
+    t0 -= prev_minutes * 60
+
+    def save_last(micro):
+        if not args.save_every:
+            return
+        torch.save({"lora": lora_state(model), "opt": opt.state_dict(), "sched": sched.state_dict(),
+                    "scaler": scaler.state_dict(), "log": log, "best": best, "best_state": best_state,
+                    "step": step, "epoch": epoch, "micro": micro, "minutes": (time.time() - t0) / 60},
+                   str(last_path) + ".tmp")
+        Path(str(last_path) + ".tmp").replace(last_path)
+
     model.train()
-    done, running, logged = False, 0.0, 0
+    done, running, logged = step >= total, 0.0, 0
     while not done:
         micro = 0
         opt.zero_grad(set_to_none=True)  # drop a partial accumulation left from the previous epoch
         for ids, att, lab in batches(examples, args.batch_size, tok.pad_token_id, rng):
+            if micro < skip:  # already trained on before the restart
+                micro += 1
+                continue
             ids, att, lab = ids.to(model.device), att.to(model.device), lab.to(model.device)
             with torch.autocast("cuda" if cuda else "cpu", dtype=dtype if cuda else torch.bfloat16,
                                 enabled=cuda or args.cpu_fast):
@@ -211,6 +241,10 @@ def main():
             if step >= total:
                 done = True
                 break
+            if args.save_every and step % args.save_every == 0:
+                save_last(micro)
+        if not done:
+            epoch, skip = epoch + 1, 0
 
     # restore the best adapter and predict
     model.load_state_dict(best_state, strict=False)
