@@ -6,6 +6,10 @@ cd "$(dirname "$0")/.."
 FT=${1:-qwen05b_lora}
 [ -f outputs/$FT/s1/test.jsonl ] || FT=qwen05b_lora_ep05
 MAIN="copy dictionary dictionary_pooled banglat5_cpu1ep $FT"
+# 0) validation (development numbers quoted in the text)
+python src/evaluate.py --split val --labse --main_system $FT --systems copy dictionary dictionary_pooled banglat5_cpu1ep \
+  qwen3b_zeroshot qwen3b_fewshot $FT --compare qwen3b_fewshot:qwen3b_zeroshot qwen3b_fewshot:copy qwen3b_zeroshot:copy \
+  $FT:qwen3b_fewshot $FT:dictionary dictionary:dictionary_pooled banglat5_cpu1ep:dictionary
 # 1) full test set
 python src/evaluate.py --split test --labse --main_system $FT --systems $MAIN \
   --compare $FT:dictionary $FT:banglat5_cpu1ep banglat5_cpu1ep:dictionary dictionary:dictionary_pooled $FT:copy

@@ -10,3 +10,6 @@ error_analysis/
 .ipynb_checkpoints/
 logs/
 outputs_sub500/
+report/*.aux
+report/*.log
+report/*.out

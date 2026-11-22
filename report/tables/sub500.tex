@@ -1,0 +1,13 @@
+\begin{table*}[t]\centering\small
+\begin{tabular}{@{}lrrrrrrrr@{}}\toprule
+System & Chit. & Noak. & Sylh. & Bari. & Myme. & chrF & BLEU & LaBSE\\\midrule
+Copy input & 32.0 & 39.1 & 52.6 & 40.0 & 62.3 & 45.4 & 12.3 & 0.71\\
+\addlinespace[1pt]
+Qwen2.5-3B zero-shot & 32.6 & 38.1 & 51.7 & 39.2 & 59.1 & 44.3 & 11.1 & 0.71\\
+Qwen2.5-3B 5-shot & 34.7 & 39.2 & 50.2 & 42.0 & 56.9 & 44.8 & 12.8 & 0.73\\
+Qwen2.5-0.5B + LoRA & 45.7 & 53.8 & 61.8 & 60.6 & 76.8 & 59.9 & 30.2 & 0.83\\
+Dictionary (per dialect) & 55.4 & 60.5 & 69.8 & \textbf{77.5} & \textbf{89.1} & 70.7 & 45.3 & 0.91\\
+BanglaT5, 1 epoch & \textbf{58.3} & \textbf{62.4} & \textbf{74.6} & 71.8 & 86.9 & \textbf{71.0} & \textbf{47.3} & \textbf{0.92}\\
+\bottomrule\end{tabular}
+\caption{RQ1 on the fixed 500-pair stratified test subset (100 per dialect): prompting versus fine-tuning. The prompted model uses the best instruction and the best 5-shot draw on validation.}\label{tab:sub500}
+\end{table*}

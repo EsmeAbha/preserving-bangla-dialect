@@ -1,0 +1,28 @@
+\begin{table*}[t]\centering\small
+\begin{tabular}{@{}ll@{}}\toprule
+\multicolumn{2}{@{}l}{\emph{Chittagong}}\\
+Source & \bn{আর বর বইনোর আজিয়া মন ভালা নাই}\\
+Reference & \bn{আমার বড় বোনের আজকে মন ভালো নেই}\\
+3B 5-shot & \bn{এবং বর বইনোর জন্য মন ভালো নয়}\\
+0.5B+LoRA & \bn{আমার বড় বোনের আজ মন ভালো নেই}\\
+Dictionary & \bn{আমার খুব বোন আজ মন ভালো নেই}\\
+BanglaT5 & \bn{আমার বর বোনের আজ মন ভালো নেই}\\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Sylhet}}\\
+Source & \bn{আমার বাসার দারওয়ান অনেক ভালা মানুষ}\\
+Reference & \bn{আমার বাসার দারওয়ান অনেক ভালো মানুষ}\\
+3B 5-shot & \bn{আমার বাসার দারোয়ান অনেক ভাল আমেরিকা}\\
+0.5B+LoRA & \bn{আমার বাসার প্রধান অনেক ভালো মানুষ}\\
+Dictionary & \bn{আমার বাসার দারওয়ান অনেক ভালো মানুষ}\\
+BanglaT5 & \bn{আমার বাসার দারোয়ান অনেক ভালো মানুষ}\\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Barishal}}\\
+Source & \bn{মাইয়াডা বেইন্নাহালে ঘুমে গোনে উইঠ্যাই পড়তে বয়}\\
+Reference & \bn{মেয়েটি সকালে ঘুম থেকে উঠেই পরতে বসে}\\
+3B 5-shot & \bn{মেয়েটি বাইনহালে শুয়ে আছে এবং বয়ে যাওয়ার জন্য উঠে পড়তে বয়}\\
+0.5B+LoRA & \bn{মেয়েটি সবার ঘুমিতে থাকতে বসে}\\
+Dictionary & \bn{মেয়েটি সকালে ঘুম থেকে উইঠ্যাই পড়তে বসে}\\
+BanglaT5 & \bn{মেয়েটি বিছানায় ঘুমিয়ে পড়ে}\\
+\bottomrule\end{tabular}
+\caption{Real test outputs, one sentence for three of the dialects (chosen automatically: the first subset sentence of 4--7 words on which the four systems all differ).}\label{tab:qual}
+\end{table*}
