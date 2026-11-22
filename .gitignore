@@ -9,3 +9,4 @@ error_analysis/
 *.zip
 .ipynb_checkpoints/
 logs/
+outputs_sub500/
