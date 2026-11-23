@@ -45,7 +45,7 @@ baseline, ranks the dialects by difficulty for every system, and per sentence it
 difficulty for prompting ($\rho=«rho_zs»$) but less for trained systems ($\rho=«rho_ft»$). A dictionary
 learned on four dialects closes about half of the gap on a fifth, unseen dialect. An automatic error profile
 shows that prompted models keep dialect words or invent new ones, whereas trained models replace dialect words
-but the fine-tuned LLM often picks the wrong standard word.
+but the fine-tuned LLM invents more words that are in neither the input nor the reference.
 \end{abstract}
 
 \section{Introduction}
@@ -245,8 +245,8 @@ dialect words and produces only «zs_prod»\% of the standard words that were ne
 «fs_kept»\% and «fs_prod»\%, but at the cost of more invented words («fs_novel»\% of the output). The
 dictionary keeps «dict_kept»\% of the dialect words (unknown words are copied) but rarely invents
 («dict_novel»\%). BanglaT5 and the fine-tuned LLM both replace almost every dialect word («bt5_kept»\% and
-«ft_kept»\% kept), but the LLM produces fewer of the needed words («ft_prod»\% against «bt5_prod»\%) and more
-novel ones («ft_novel»\% against «bt5_novel»\%): it has learned \emph{that} a word must change more reliably
+«ft_kept»\% kept), and they produce as many of the needed words («ft_prod»\% and «bt5_prod»\%), but the LLM also writes
+more novel words («ft_novel»\% against «bt5_novel»\%): it has learned \emph{that} a word must change more reliably
 than \emph{what} it must change into. Negation disagrees with the reference in «bt5_neg»--«ft_neg»\% of the
 trained systems' outputs. Table~\ref{tab:qual} gives examples.
 

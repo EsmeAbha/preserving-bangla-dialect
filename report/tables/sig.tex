@@ -4,16 +4,16 @@ Set & Comparison & $\Delta$chrF & 95\% CI & $n$\\\midrule
 Sub. & 3B 5-shot $-$ 3B zero-shot & $+0.45$ & [$-$0.53, 1.40] & 500\\
 Sub. & 3B 5-shot $-$ Copy & $-0.63$ & [$-$1.71, 0.44] & 500\\
 Sub. & 3B zero-shot $-$ Copy & $-1.08$ & [$-$1.81, $-$0.37] & 500\\
-Sub. & Qwen-0.5B+LoRA $-$ 3B 5-shot & $+15.19$ & [13.51, 16.81] & 500\\
-Sub. & Qwen-0.5B+LoRA $-$ 3B zero-shot & $+15.64$ & [14.16, 17.18] & 500\\
+Sub. & Qwen-0.5B+LoRA $-$ 3B 5-shot & $+23.66$ & [21.90, 25.50] & 500\\
+Sub. & Qwen-0.5B+LoRA $-$ 3B zero-shot & $+24.11$ & [22.49, 25.91] & 500\\
 \addlinespace[2pt]
-Test & Qwen-0.5B+LoRA $-$ Dictionary & $-10.89$ & [$-$11.68, $-$10.10] & 1875\\
-Test & Qwen-0.5B+LoRA $-$ BanglaT5 & $-11.54$ & [$-$12.39, $-$10.63] & 1875\\
+Test & Qwen-0.5B+LoRA $-$ Dictionary & $-2.80$ & [$-$3.59, $-$1.96] & 1875\\
+Test & Qwen-0.5B+LoRA $-$ BanglaT5 & $-3.45$ & [$-$4.27, $-$2.59] & 1875\\
 Test & BanglaT5 $-$ Dictionary & $+0.64$ & [$-$0.17, 1.45] & 1875\\
 Test & Dictionary $-$ Dict.\ pooled & $-1.30$ & [$-$1.62, $-$0.94] & 1875\\
-Test & Qwen-0.5B+LoRA $-$ Copy & $+15.69$ & [14.83, 16.45] & 1875\\
+Test & Qwen-0.5B+LoRA $-$ Copy & $+23.78$ & [22.86, 24.58] & 1875\\
 \addlinespace[2pt]
-ONU. & Qwen-0.5B+LoRA $-$ Dictionary & $-12.40$ & [$-$13.53, $-$11.32] & 2437\\
+ONU. & Qwen-0.5B+LoRA $-$ Dictionary & $-2.63$ & [$-$3.71, $-$1.48] & 2437\\
 ONU. & BanglaT5 $-$ Dictionary & $+2.94$ & [1.87, 4.04] & 2437\\
 \bottomrule\end{tabular}
 \caption{Paired bootstrap differences in chrF (1,000 resamples) on the 500-pair subset (Sub.), the full test set (Test) and novel ONUBAD (ONU.).}\label{tab:sig}

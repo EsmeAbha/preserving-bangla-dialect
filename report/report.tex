@@ -38,14 +38,14 @@ Vashantor (five dialects) with a leakage-free split, and on ONUBAD as an out-of-
 copying the input, a word-replacement dictionary, BanglaT5, prompted Qwen2.5-3B-Instruct (zero- and 5-shot,
 three runs each on validation) and Qwen2.5-0.5B-Instruct fine-tuned with LoRA. Prompting the 3B model does not
 beat copying the input (44.3 and 44.8 against 45.4 chrF on a 500-pair test subset), whereas the
-0.5B model after half an epoch of training reaches 59.9, 15.2 chrF above 5-shot prompting. Neither LLM reaches
+0.5B model after two epochs of training reaches 68.4, 23.7 chrF above 5-shot prompting. Neither LLM reaches
 the dictionary (70.3 chrF on the full test set) or BanglaT5 (70.9), and BanglaT5 is the only
 system that clearly beats the dictionary out of domain. Dialect distance, 100 minus the chrF of the copy
 baseline, ranks the dialects by difficulty for every system, and per sentence it explains almost all of the
-difficulty for prompting ($\rho=-0.90$) but less for trained systems ($\rho=-0.55$). A dictionary
+difficulty for prompting ($\rho=-0.90$) but less for trained systems ($\rho=-0.49$). A dictionary
 learned on four dialects closes about half of the gap on a fifth, unseen dialect. An automatic error profile
 shows that prompted models keep dialect words or invent new ones, whereas trained models replace dialect words
-but the fine-tuned LLM often picks the wrong standard word.
+but the fine-tuned LLM invents more words that are in neither the input nor the reference.
 \end{abstract}
 
 \section{Introduction}
@@ -74,7 +74,7 @@ the dialect from standard Bangla, measured as $100-\mathrm{chrF}$ of the copy ba
 sentence in one split, and the finding that 323 of the 2,796 ONUBAD \cite{onubad} pairs, often used as a
 separate test set, share their standard sentence with Vashantor training data;
 (ii) evidence that prompting a 3B instruction-tuned LLM is no better than copying the input, whereas a 0.5B
-LLM fine-tuned with LoRA on CPU improves on it by 15.2 chrF;
+LLM fine-tuned with LoRA on CPU improves on it by 23.7 chrF;
 (iii) a word-replacement dictionary baseline that is hard to beat (70.3 chrF on test, ahead of both LLMs and level with BanglaT5), which earlier work did not report;
 (iv) a dialect-distance measure that predicts per-sentence difficulty for every system (RQ2) and a
 leave-one-dialect-out study (RQ3); and (v) an automatic word-level error profile that separates
@@ -153,7 +153,7 @@ chat turns, with three random draws (three runs).
 \paragraph{Fine-tuned LLM.} Qwen2.5-0.5B-Instruct with LoRA adapters (rank 32, $\alpha=64$, dropout 0.05) on
 all linear layers (17.6M trainable parameters, 3.4\%), trained on the same prompt as zero-shot with the loss
 on the answer tokens only. AdamW, learning rate $2\cdot10^{-4}$, cosine schedule with 3\% warm-up,
-effective batch 16, maximum length 256 tokens, bf16 autocast. We report the checkpoint after half an epoch (293 optimiser steps, 2 hours); the planned two-epoch run was cut short by the compute budget. Validation chrF on a fixed
+effective batch 16, maximum length 256 tokens, bf16 autocast. We report 2 epochs (1,172 optimiser steps, 8.6 hours); the best checkpoint was at epoch 1.5. Validation chrF on a fixed
 stratified 250-pair subset is measured twice per epoch and the best adapter is kept. Training ran on four CPU
 cores (about 22\,s per step).
 
@@ -182,7 +182,7 @@ Prompting is stable but weak. Over three instruction paraphrases, zero-shot Qwen
 39.9\pmsd{0.8} chrF on validation, and over three example draws 5-shot scores 41.0\pmsd{0.4}, against 41.0
 for copying the input; the 5-shot gain over zero-shot is small but significant ($+1.1$, CI $[+0.6, +1.7]$).
 We kept the best paraphrase (40.5) and the best draw (41.4) for the test runs. The fine-tuned 0.5B model
-scores 59.1 on validation. Dictionary and BanglaT5 score 71.0 and 69.9.
+scores 66.3 on validation. Dictionary and BanglaT5 score 71.0 and 69.9.
 
 \input{tables/sub500}
 \input{tables/main}
@@ -191,14 +191,14 @@ scores 59.1 on validation. Dictionary and BanglaT5 score 71.0 and 69.9.
 On the 500-pair test subset (Table~\ref{tab:sub500}, differences in Table~\ref{tab:sig}), zero-shot
 Qwen2.5-3B scores 44.3 chrF, \emph{below} copying the input at 45.4 ($-1.1$ chrF, CI $[-1.8, -0.4]$). Five examples
 add little ($+0.5$ chrF, CI $[-0.5, +1.4]$) and do not lift it above copying ($-0.6$ chrF, CI $[-1.7, +0.4]$); LaBSE agrees (0.71--0.73 against
-0.71 for copying). Fine-tuning changes the picture: Qwen2.5-0.5B, six times smaller, reaches 59.9 chrF
-after half an epoch of training, clearly above 5-shot ($+15.2$ chrF, CI $[+13.5, +16.8]$) and zero-shot prompting ($+15.6$ chrF, CI $[+14.2, +17.2]$), with LaBSE
-0.83.
+0.71 for copying). Fine-tuning changes the picture: Qwen2.5-0.5B, six times smaller, reaches 68.4 chrF
+after two epochs of training, clearly above 5-shot ($+23.7$ chrF, CI $[+21.9, +25.5]$) and zero-shot prompting ($+24.1$ chrF, CI $[+22.5, +25.9]$), with LaBSE
+0.88.
 For models of this size the answer to RQ1 is clearly yes.
 
 Fine-tuning a general LLM is, however, not the best use of the training data (Table~\ref{tab:main}). On the
-full test set the 0.5B model (59.4 chrF) is behind both the dictionary ($-10.9$ chrF, CI $[-11.7, -10.1]$) and BanglaT5
-($-11.5$ chrF, CI $[-12.4, -10.6]$). BanglaT5 after one epoch and the dictionary are statistically tied ($+0.6$ chrF, CI $[-0.2, +1.4]$). One pooled
+full test set the 0.5B model (67.5 chrF) is behind both the dictionary ($-2.8$ chrF, CI $[-3.6, -2.0]$) and BanglaT5
+($-3.5$ chrF, CI $[-4.3, -2.6]$). BanglaT5 after one epoch and the dictionary are statistically tied ($+0.6$ chrF, CI $[-0.2, +1.4]$). One pooled
 dictionary is better than per-dialect tables (per-dialect minus pooled: $-1.3$ chrF, CI $[-1.6, -0.9]$), although on
 validation the two were equal ($+0.1$, CI $[-0.4, +0.6]$): many replacements are shared between dialects, so
 dialect-specific tables only lose data.
@@ -213,7 +213,7 @@ Chittagong hardest and Mymensingh easiest, and over the five dialects distance a
 $-0.7$ to $-1.0$ for all systems (Table~\ref{tab:rq2}). Per sentence, distance explains almost all of the
 difficulty for the prompted model ($\rho=-0.90$ zero-shot, $-0.77$ 5-shot): it changes little, so it
 succeeds only where the input was already close to the reference. For trained systems the correlation is
-weaker ($\rho=-0.58$ dictionary, $-0.58$ BanglaT5, $-0.55$ fine-tuned LLM): training removes part
+weaker ($\rho=-0.58$ dictionary, $-0.58$ BanglaT5, $-0.49$ fine-tuned LLM): training removes part
 of the dependence on distance, but far dialects stay hard. The answer to RQ2 is yes: copy-based distance is a
 cheap and reliable predictor of difficulty, at the dialect and at the sentence level.
 
@@ -232,7 +232,7 @@ LLMs needs GPU time and is left for future work.
 
 \subsection{Out of domain}
 All systems lose on novel ONUBAD (Table~\ref{tab:onubad}): the dictionary 10.8 chrF (to
-59.5), BanglaT5 8.5 (to 62.4) and the fine-tuned LLM 12.3 (to 47.1), while
+59.5), BanglaT5 8.5 (to 62.4) and the fine-tuned LLM 10.7 (to 56.8), while
 copying the input scores 37.6. ONUBAD contains only three dialects, including the hardest, so part of
 the drop comes from the dialect mix. Out of domain BanglaT5 beats the dictionary ($+2.9$ chrF, CI $[+1.9, +4.0]$): a model
 of the language generalises to unseen words, a lookup table cannot.
@@ -245,9 +245,9 @@ dialect words and produces only 6.3\% of the standard words that were needed; ex
 34.2\% and 16.9\%, but at the cost of more invented words (37.0\% of the output). The
 dictionary keeps 30.1\% of the dialect words (unknown words are copied) but rarely invents
 (11.2\%). BanglaT5 and the fine-tuned LLM both replace almost every dialect word (9.4\% and
-8.2\% kept), but the LLM produces fewer of the needed words (45.9\% against 56.5\%) and more
-novel ones (34.8\% against 20.8\%): it has learned \emph{that} a word must change more reliably
-than \emph{what} it must change into. Negation disagrees with the reference in 3.8--5.6\% of the
+6.4\% kept), and they produce as many of the needed words (57.1\% and 56.5\%), but the LLM also writes
+more novel words (27.3\% against 20.8\%): it has learned \emph{that} a word must change more reliably
+than \emph{what} it must change into. Negation disagrees with the reference in 3.8--4.8\% of the
 trained systems' outputs. Table~\ref{tab:qual} gives examples.
 
 \input{tables/errors}
@@ -256,15 +256,15 @@ trained systems' outputs. Table~\ref{tab:qual} gives examples.
 \section{Discussion}
 \paragraph{Why prompting fails.} The prompted 3B model treats unknown dialect words either as standard words,
 which it keeps, or as noise, which it replaces with unrelated words. Five examples cannot teach a vocabulary
-of thousands of word forms. Fine-tuning on 9,370 pairs teaches it, which is why even a 0.5B LLM gains about
-15 chrF over prompting.
+of thousands of word forms. Fine-tuning on 9,370 pairs teaches it, which is why even a 0.5B LLM gains
+23.7 chrF over prompting.
 
 \paragraph{Why simple systems win.} The task is close to word substitution: 15--18\% of the dictionary and
 BanglaT5 outputs are exactly the reference, and the words that change are mostly a closed set of pronouns,
 verb endings and frequent content words. A lookup table stores every observed replacement exactly, and
 BanglaT5 is pretrained on Bangla and copies unchanged words reliably. A general LLM must instead learn the
 replacements through low-rank adapters and override a prior that prefers paraphrase, which the error profile
-shows as invented words. With half an epoch of training, LoRA on a 0.5B model does not close this gap; larger models and
+shows as invented words. With two epochs of training, LoRA on a 0.5B model does not close this gap; larger models and
 longer training, as planned with QLoRA on Qwen2.5-7B, may.
 
 \paragraph{Practical advice.} For normalising dialect text, a dictionary learned from parallel data, or a
@@ -293,7 +293,7 @@ such as a changed negation; LaBSE and our negation check catch some of these, bu
 We built a leakage-free benchmark from Vashantor and the novel part of ONUBAD and compared prompting,
 fine-tuning and simple baselines for translating five Bangla dialects into standard Bangla. Prompting a 3B
 instruction-tuned LLM is no better than copying the input, and LoRA fine-tuning of a 0.5B LLM improves on it by
-15.2 chrF (RQ1), but a word-replacement dictionary and BanglaT5 remain clearly better, and BanglaT5
+23.7 chrF (RQ1), but a word-replacement dictionary and BanglaT5 remain clearly better, and BanglaT5
 generalises best out of domain. Copy-based dialect distance predicts which dialects and which sentences are hard
 for every system (RQ2), and about half of the dictionary knowledge needed for a dialect can be borrowed from the
 other four (RQ3). The next steps are the GPU runs already implemented in the repository (QLoRA on Qwen2.5-7B and
