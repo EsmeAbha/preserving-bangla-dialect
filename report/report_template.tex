@@ -256,8 +256,8 @@ trained systems' outputs. Table~\ref{tab:qual} gives examples.
 \section{Discussion}
 \paragraph{Why prompting fails.} The prompted 3B model treats unknown dialect words either as standard words,
 which it keeps, or as noise, which it replaces with unrelated words. Five examples cannot teach a vocabulary
-of thousands of word forms. Fine-tuning on 9,370 pairs teaches it, which is why even a 0.5B LLM gains about
-15 chrF over prompting.
+of thousands of word forms. Fine-tuning on 9,370 pairs teaches it, which is why even a 0.5B LLM gains
+«ft_sub_gain» chrF over prompting.
 
 \paragraph{Why simple systems win.} The task is close to word substitution: 15--18\% of the dictionary and
 BanglaT5 outputs are exactly the reference, and the words that change are mostly a closed set of pronouns,
